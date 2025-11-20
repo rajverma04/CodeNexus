@@ -49,7 +49,7 @@ const problemSchema = {
         }
 
     ],
-    startCode : [
+    startCode: [
         {
             language: {
                 type: String,
@@ -65,7 +65,19 @@ const problemSchema = {
         type: Schema.Types.ObjectId,     // problem creator id
         ref: "user",        // refer to user schema(user.js)
         required: true
-    }
+    },
+    referenceSolution: [    // actual solution of problem
+        {
+            language: {
+                type: String,
+                required: true
+            },
+            completeCode: {
+                type: String,
+                required: true
+            }
+        }
+    ]
 }
 
 const Problem = mongoose.model("problem", problemSchema);
