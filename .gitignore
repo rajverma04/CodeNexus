@@ -14,7 +14,7 @@ pids
 *.pid
 *.seed
 *.pid.lock
-
+quesEx.json
 # Environment variables
 .env
 .env.local
