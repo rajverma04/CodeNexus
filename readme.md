@@ -114,4 +114,21 @@ fetchData();
   }
 ]
 
-#axios
+# axios
+
+# page loading limits
+  syntax: await Problem.find().skip().limit()
+    const page = 2;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    filter:
+      await Problem.find({difficulty: "easy", tags: "array"})
+
+      await Problem.find({
+        votes: {$gte : 100},
+        tags: {$in : ["array", "hashmap"]}
+      })
+
+
+    give all operator like: $gte, $in,, etc
