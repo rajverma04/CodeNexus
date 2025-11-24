@@ -24,7 +24,7 @@ problemRouter.get("/probleById/:id", userMiddleware, getProblemById);
 problemRouter.get("/getAllProblem", userMiddleware, getAllProblems);
 
 // user solved problem
-problemRouter.get("/problemSolvedByUser", userMiddleware, solvedAllProblemByUser)
+// problemRouter.get("/problemSolvedByUser", userMiddleware, solvedAllProblemByUser)
 
 
 module.exports = problemRouter;
