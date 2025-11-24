@@ -1,4 +1,5 @@
 const Problem = require("../models/problems");
+const User = require("../models/user");
 const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility")
 
 const createProblem = async (req, res) => {
@@ -22,7 +23,7 @@ const createProblem = async (req, res) => {
                 expected_output: testcase.output,
             }))
             const submitResult = await submitBatch(submissions);
-            console.log(submitResult)
+            // console.log(submitResult)
             const resultToken = submitResult.map((value) => value.token);       // return token for batch submission
 
             const testResult = await submitToken(resultToken);
@@ -85,7 +86,7 @@ const updateProblem = async (req, res) => {
                 }
             }
         }
-        const newProblem = await Problem.findByIdAndDelete(id, { ...req.body }, { runValidators: true, new: true });
+        const newProblem = await Problem.findByIdAndUpdate(id, { ...req.body }, { runValidators: true, new: true });
         res.status(200).send(newProblem);
     } catch (err) {
         res.status(500).send("Error: " + err);
@@ -117,7 +118,12 @@ const getProblemById = async (req, res) => {
             return res.status(400).send("ID is missing");
         }
 
-        const getProblem = await Problem.findById(id)
+        // it will get all details bydefault
+        // const getProblem = await Problem.findById(id);
+
+        // to get only selected 
+        const getProblem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases startCode referenceSolution");     // it will fetch only selected field
+
         if (!getProblem) {
             return res.status(404).send("Problem is missing");
         }
@@ -129,13 +135,10 @@ const getProblemById = async (req, res) => {
 }
 
 const getAllProblems = async (req, res) => {
-    const { id } = req.params;
-    try {
-        if (!id) {
-            return res.status(400).send("ID is missing");
-        }
 
-        const getProblem = await Problem.find({})       // all problem fetched from database, return arrays
+    try {
+
+        const getProblem = await Problem.find({}).select("_id title difficulty tags")       // all problem fetched from database, return arrays
         if (getProblem.length == 0) {
             return res.status(404).send("Problem is missing");
         }
@@ -146,4 +149,21 @@ const getAllProblems = async (req, res) => {
 
 }
 
-module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems };
+const solvedAllProblemByUser = async (req, res) => {
+    try {
+        // const count = req.result.problemSolved.length;
+        const userId = req.result._id;
+        // const user = await User.findById(userId).populate("problemSolved")       // it will return the refenrece of ID of problemID and return everything about the problemSolved
+
+        const user = await User.findById(userId).populate({
+            path: "problemSolved",
+            select: "_id title difficulty tags"
+        })
+        res.status(200).send(user.problemSolved);
+
+    } catch (err) {
+        res.status(500).send("Error: " + err);
+    }
+}
+
+module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser };

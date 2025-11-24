@@ -6,12 +6,16 @@ const cookieParser = require("cookie-parser");
 const authRouter = require('./routes/userAuth');
 const redisClient = require("./config/redis");
 const problemRouter = require("./routes/problemCreator");
+const submitRouter = require("./routes/submit");
+
 
 app.use(express.json());     // convert req.body data into JS object as it comes in JSON format 
 app.use(cookieParser());
 
 app.use("/user", authRouter);
 app.use("/problem", problemRouter);
+app.use("/submission", submitRouter);
+
 
 // connect DB and redist then start server
 const initializeConnection = async () => {
