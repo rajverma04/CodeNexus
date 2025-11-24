@@ -36,7 +36,11 @@ const userSchema = new Schema({
         default: "user"
     },
     problemSolved: {
-        type: [String]
+        type: [{
+            type: Schema.Types.ObjectId,        // unique solved stored
+            ref: "problem"
+        }],
+        unique: true
     }
 }, {timestamps: true});
 
