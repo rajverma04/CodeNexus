@@ -1,5 +1,6 @@
 const redisClient = require("../config/redis");
 const User = require("../models/user")  //! inlcude schema
+const Submission = require("../models/submission");
 const validate = require("../utils/validator")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
@@ -18,7 +19,7 @@ const register = async (req, res) => {
         req.body.role = "user";
 
         const user = await User.create(req.body);       //! hash password before creating user profile
-        const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user"}, process.env.JWT_KEY, { expiresIn: 3600 });
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user" }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000 });     //! maxAge: lifetime of the cookie in milliseconds.
 
         res.status(201).send("User Registered Successfully");
@@ -43,7 +44,7 @@ const login = async (req, res) => {
         if (!match) {
             throw new Error("Invalid Credential")
         }
-        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role}, process.env.JWT_KEY, { expiresIn: 3600 });
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000 });
 
         res.status(200).send("Logged In Successfully");
@@ -58,14 +59,14 @@ const logout = async (req, res) => {
         // validate the token then blocklist that token untill the timeframe end(as token do not expire before time) & clear the cookies
 
         // since token is valid, extract it
-        const {token} = req.cookies;
+        const { token } = req.cookies;
         const payload = jwt.decode(token);      // get payload using decode()
 
         // todo: add to redis to block this token
         await redisClient.set(`token:${token}`, "Blocked");
         await redisClient.expireAt(`token:${token}`, payload.exp)       // in payload expiry of token is present
 
-        res.cookie("token", null, {expires: new Date(Date.now())});
+        res.cookie("token", null, { expires: new Date(Date.now()) });
         res.send("Logged Out Successfully");
     } catch (err) {
         res.status(503).send("Error: " + err);
@@ -73,16 +74,16 @@ const logout = async (req, res) => {
 }
 
 const adminRegister = async (req, res) => {
-     try {
-    
-        validate(req.body);        
+    try {
+
+        validate(req.body);
         const { fristName, emailId, password } = req.body;
 
         req.body.password = await bcrypt.hash(password, 10);        // TODO: hashing password
-        
+
 
         const user = await User.create(req.body);       //! hash password before creating user profile
-        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role}, process.env.JWT_KEY, { expiresIn: 3600 });
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000 });     //! maxAge: lifetime of the cookie in milliseconds.
 
         res.status(201).send("User Registered Successfully");
@@ -91,4 +92,20 @@ const adminRegister = async (req, res) => {
     }
 }
 
-module.exports = { register, login, logout, adminRegister }
+const deleteProfile = async (req, res) => {
+    try {
+        const userId = req.result._id;      // getting id from userMiddleware
+
+        // delete from userSchema
+        await User.findByIdAndDelete(userId);       // it will post delete (see user Schema)
+
+        // now delete submission code of this user from Database
+        // await Submission.deleteMany({ userId });
+
+        res.status(200).send("Deleted Successfully");
+
+    } catch (err) {
+        res.status(500).send("Internal Server Error");
+    }
+}
+module.exports = { register, login, logout, adminRegister, deleteProfile }

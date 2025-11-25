@@ -1,4 +1,5 @@
 const Problem = require("../models/problems");
+const Submission = require("../models/submission");
 const User = require("../models/user");
 const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility")
 
@@ -163,6 +164,23 @@ const solvedAllProblemByUser = async (req, res) => {
 
     } catch (err) {
         res.status(500).send("Error: " + err);
+    }
+}
+
+const submittedProblem = async (req, res) => {
+    try {
+        const userId = req.result._id;
+        const problemId = req.params.pid;
+
+        const answer = await Submission.find({userId, problemId});
+
+        if(answer.length === 0) {
+            res.status(200).send("No submission present");
+        }
+
+        res.status(200).send(answer);
+    } catch(err) {
+        res.status(500).send("Interal Server Error");
     }
 }
 

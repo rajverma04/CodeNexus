@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const {Schema} = mongoose;
 
+// this is pre Schema
 const userSchema = new Schema({
     firstName: {
         type: String,
@@ -44,6 +45,12 @@ const userSchema = new Schema({
     }
 }, {timestamps: true});
 
+// it will run post(after the findOneByIDAndDelete) in the last to delete everyting related this to this userId
+userSchema.post("findOneAndDelete", async function (userInfo){
+    if(userInfo) {
+        await mongoose.model("submission").deleteMany({userId: userInfo_id});
+    }
+})
 
 const User = mongoose.model("user", userSchema);
 
