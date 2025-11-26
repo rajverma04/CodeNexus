@@ -36,7 +36,7 @@ function SignUp() {
               className="card-body space-y-4"
             >
               {/* Form Heading */}
-              <h1 className="text-3xl font-bold text-center mb-2">Sign Up</h1>
+              <h1 className="text-3xl font-bold text-center mb-2">Code Nexus</h1>
 
               <fieldset className="space-y-3">
                 {/* Name */}
@@ -89,7 +89,7 @@ function SignUp() {
 
                 {/* Submit */}
                 <button type="submit" className="btn btn-neutral w-full mt-4">
-                  Submit
+                  Sign Up
                 </button>
               </fieldset>
             </form>

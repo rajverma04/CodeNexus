@@ -20,9 +20,21 @@ const register = async (req, res) => {
 
         const user = await User.create(req.body);       //! hash password before creating user profile
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user" }, process.env.JWT_KEY, { expiresIn: 3600 });
+
+        const reply = {
+            fristName: user.firstName,
+            emailId: user.emailId,
+            _id: user._id
+        }
+
+
         res.cookie("token", token, { maxAge: 3600 * 1000 });     //! maxAge: lifetime of the cookie in milliseconds.
 
-        res.status(201).send("User Registered Successfully");
+        // res.status(201).send("User Registered Successfully");
+        res.status(201).json({
+            user: reply,
+            message: "Registered Successfully"
+        });
     } catch (err) {
         res.status(400).send("Error: " + err);      // 400: Bad request -> invalid request syntax or parameter
     }
@@ -44,10 +56,20 @@ const login = async (req, res) => {
         if (!match) {
             throw new Error("Invalid Credential")
         }
+
+        const reply = {
+            fristName: user.firstName,
+            emailId: user.emailId,
+            _id: user._id
+        }
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000 });
 
-        res.status(200).send("Logged In Successfully");
+        // res.status(200).send("Logged In Successfully");
+        res.status(201).json({
+            user: reply,
+            message: "Login Successfully"
+        });
 
     } catch (err) {
         res.status(401).send("Error: " + err);      // 401: unauthrised access
