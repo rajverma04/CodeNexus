@@ -172,16 +172,16 @@ const submittedProblem = async (req, res) => {
         const userId = req.result._id;
         const problemId = req.params.pid;
 
-        const answer = await Submission.find({userId, problemId});
+        const answer = await Submission.find({ userId, problemId });
 
-        if(answer.length === 0) {
+        if (answer.length === 0) {
             res.status(200).send("No submission present");
         }
 
         res.status(200).send(answer);
-    } catch(err) {
+    } catch (err) {
         res.status(500).send("Interal Server Error");
     }
 }
 
-module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser };
+module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem };

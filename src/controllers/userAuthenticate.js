@@ -24,7 +24,8 @@ const register = async (req, res) => {
         const reply = {
             fristName: user.firstName,
             emailId: user.emailId,
-            _id: user._id
+            _id: user._id,
+            role: user.role
         }
 
 
@@ -57,10 +58,11 @@ const login = async (req, res) => {
             throw new Error("Invalid Credential")
         }
 
-        const reply = {
+        const reply = {     // only these data will be sent to frontend
             fristName: user.firstName,
             emailId: user.emailId,
-            _id: user._id
+            _id: user._id,
+            role: user.role
         }
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000 });
