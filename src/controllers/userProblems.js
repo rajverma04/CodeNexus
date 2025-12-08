@@ -24,7 +24,7 @@ const createProblem = async (req, res) => {
                 expected_output: testcase.output,
             }))
             const submitResult = await submitBatch(submissions);
-            // console.log(submitResult)
+            console.log(submitResult)
             const resultToken = submitResult.map((value) => value.token);       // return token for batch submission
 
             const testResult = await submitToken(resultToken);

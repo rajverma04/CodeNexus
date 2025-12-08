@@ -49,114 +49,110 @@ function SignUp() {
     dispatch(registerUser(data));
   };
   return (
-  <>
-    <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
-      <div className="w-full max-w-sm">
-        <div className="card bg-base-100 shadow-2xl">
-          <form
-            noValidate
-            onSubmit={handleSubmit(onSubmit)}
-            className="card-body space-y-4"
-          >
-            {/* Form Heading */}
-            <h1 className="text-3xl font-bold text-center mb-2">
-              Code Nexus
-            </h1>
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
+        <div className="w-full max-w-sm">
+          <div className="card bg-base-100 shadow-2xl">
+            <form
+              noValidate
+              onSubmit={handleSubmit(onSubmit)}
+              className="card-body space-y-4"
+            >
+              {/* Form Heading */}
+              <h1 className="text-3xl font-bold text-center mb-2">
+                Code Nexus
+              </h1>
 
-            <fieldset className="space-y-4">
-              {/* Name */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Name</span>
-                </label>
-                <input
-                  {...register("firstName")}
-                  placeholder="John"
-                  type="text"
-                  className="input input-bordered w-full"
-                />
-                {errors.firstName && (
-                  <span className="text-red-500 text-xs mt-1">
-                    {errors.firstName.message}
-                  </span>
-                )}
-              </div>
-
-              {/* Email */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Email</span>
-                </label>
-                <input
-                  {...register("emailId")}
-                  placeholder="john@example.com"
-                  type="email"
-                  className="input input-bordered w-full"
-                />
-                {errors.emailId && (
-                  <span className="text-red-500 text-xs mt-1">
-                    {errors.emailId.message}
-                  </span>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Password</span>
-                </label>
-
-                <div className="relative">
+              <fieldset className="space-y-4">
+                {/* Name */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Name</span>
+                  </label>
                   <input
-                    {...register("password")}
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter password"
-                    className="input input-bordered w-full pr-10"
+                    {...register("firstName")}
+                    placeholder="John"
+                    type="text"
+                    className="input input-bordered w-full"
                   />
-
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content"
-                  >
-                    <FontAwesomeIcon
-                      icon={showPassword ? faEyeSlash : faEye}
-                    />
-                  </button>
+                  {errors.firstName && (
+                    <span className="text-red-500 text-xs mt-1">
+                      {errors.firstName.message}
+                    </span>
+                  )}
                 </div>
 
-                {errors.password && (
-                  <span className="text-red-500 text-xs mt-1">
-                    {errors.password.message}
-                  </span>
-                )}
-              </div>
+                {/* Email */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Email</span>
+                  </label>
+                  <input
+                    {...register("emailId")}
+                    placeholder="john@example.com"
+                    type="email"
+                    className="input input-bordered w-full"
+                  />
+                  {errors.emailId && (
+                    <span className="text-red-500 text-xs mt-1">
+                      {errors.emailId.message}
+                    </span>
+                  )}
+                </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                className="btn btn-neutral w-full mt-2"
-              >
-                Sign Up
-              </button>
-            </fieldset>
-          </form>
+                {/* Password */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Password</span>
+                  </label>
 
-          {/* Footer */}
-          <div className="px-8 pb-6 pt-2 border-t border-base-200 text-center">
-            <span className="text-sm">
-              Already have an account?{" "}
-              <NavLink to="/login" className="link link-primary">
-                Login
-              </NavLink>
-            </span>
+                  <div className="relative">
+                    <input
+                      {...register("password")}
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter password"
+                      className="input input-bordered w-full pr-10"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content"
+                    >
+                      <FontAwesomeIcon
+                        icon={showPassword ? faEyeSlash : faEye}
+                      />
+                    </button>
+                  </div>
+
+                  {errors.password && (
+                    <span className="text-red-500 text-xs mt-1">
+                      {errors.password.message}
+                    </span>
+                  )}
+                </div>
+
+                {/* Submit */}
+                <button type="submit" className="btn btn-neutral w-full mt-2">
+                  Sign Up
+                </button>
+              </fieldset>
+            </form>
+
+            {/* Footer */}
+            <div className="px-8 pb-6 pt-2 border-t border-base-200 text-center">
+              <span className="text-sm">
+                Already have an account?{" "}
+                <NavLink to="/login" className="link link-primary">
+                  Login
+                </NavLink>
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </>
-);
-
+    </>
+  );
 }
 
 export default SignUp;

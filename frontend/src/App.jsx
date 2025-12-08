@@ -5,21 +5,24 @@ import SignUp from "./Pages/SignUp";
 import { checkAuth } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import AdminPanel from "./Pages/AdminPanel";
+import Admin from "./Pages/Admin";
+import AdminCreate from "./Components/AdminCreate";
+import AdminDelete from "./Components/AdminDelete";
+import AdminUpdate from "./Components/AdminUpdate";
+// import ProblemPage from "./Pages/ProblemPage";
+import ProblemEditor from "./Pages/ProblemEditor";
 
 function App() {
   // check isAuthenticated
-  const { isAuthenticated, user, loading } = useSelector(
-    (state) => state.auth
-  );
+  const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   console.log(user);
   // check initial authentication
-  
-  // useEffect(() => {
-  //   dispatch(checkAuth());
-  // }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(checkAuth());
+  }, [dispatch]);
 
   if (loading) {
     return (
@@ -35,7 +38,7 @@ function App() {
         <Route
           path="/"
           element={
-            isAuthenticated ? <HomePage></HomePage> : <Navigate to="/signup" />
+            isAuthenticated ? <HomePage></HomePage> : <Navigate to="/login" />
           }
         ></Route>
         <Route
@@ -50,12 +53,45 @@ function App() {
         <Route
           path="/admin"
           element={
-            isAuthenticated && user?.role === "admin" ? 
-              <AdminPanel />
-             : 
+            isAuthenticated && user?.role === "admin" ? (
+              <Admin />
+            ) : (
               <Navigate to="/" />
+            )
           }
         ></Route>
+        <Route
+          path="/admin/create"
+          element={
+            isAuthenticated && user?.role == "admin" ? (
+              <AdminCreate />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        ></Route>
+        <Route
+          path="/admin/update"
+          element={
+            isAuthenticated && user?.role == "admin" ? (
+              <AdminUpdate />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        ></Route>
+        <Route
+          path="/admin/delete"
+          element={
+            isAuthenticated && user?.role == "admin" ? (
+              <AdminDelete />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        ></Route>
+        {/* <Route path="/problem/:problemId" element={<ProblemPage />}></Route> */}
+        <Route path="/problems/:problemId" element={<ProblemEditor />}></Route>
       </Routes>
     </>
   );

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const problemSchema = {
+const problemSchema = new Schema ({
     title: {
         type: String,
         required: true
@@ -78,7 +78,7 @@ const problemSchema = {
             }
         }
     ]
-}
+}, {timestamps: true})
 
 const Problem = mongoose.model("problem", problemSchema);
 

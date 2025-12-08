@@ -32,7 +32,7 @@ const initializeConnection = async () => {
         app.listen(process.env.PORT, () => {
             console.log(`Server running at localhost:${process.env.PORT}`);
         })
-    } catch(err) {
+    } catch (err) {
         console.log("Error: " + err);
     }
 }
