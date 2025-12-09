@@ -1,4 +1,5 @@
 const Problem = require("../models/problems");
+const Submission = require("../models/submission");
 const User = require("../models/user");
 const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility")
 
@@ -23,7 +24,7 @@ const createProblem = async (req, res) => {
                 expected_output: testcase.output,
             }))
             const submitResult = await submitBatch(submissions);
-            // console.log(submitResult)
+            console.log(submitResult)
             const resultToken = submitResult.map((value) => value.token);       // return token for batch submission
 
             const testResult = await submitToken(resultToken);
@@ -166,4 +167,21 @@ const solvedAllProblemByUser = async (req, res) => {
     }
 }
 
-module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser };
+const submittedProblem = async (req, res) => {
+    try {
+        const userId = req.result._id;
+        const problemId = req.params.pid;
+
+        const answer = await Submission.find({ userId, problemId });
+
+        if (answer.length === 0) {
+            res.status(200).send("No submission present");
+        }
+
+        res.status(200).send(answer);
+    } catch (err) {
+        res.status(500).send("Interal Server Error");
+    }
+}
+
+module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem };

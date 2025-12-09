@@ -25,6 +25,7 @@ const userMiddleware = async (req, res, next) => {
 
         // now check is user present in redis blocklist or not
         const isBlocked = await redisClient.exists(`token:${token}`);
+
         if(isBlocked) {
             throw new Error("Invalid Token");
         }
@@ -33,7 +34,7 @@ const userMiddleware = async (req, res, next) => {
         next();
         
     } catch(err) {
-        res.status(401).send("Error:" + err);
+        res.status(401).send("Error:" + err.message);
     }
 }
 
