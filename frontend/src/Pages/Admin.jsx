@@ -1,5 +1,4 @@
-import React from "react";
-import { Plus, Pencil, Trash } from "lucide-react";
+import { Plus, Pencil, Trash, Video } from "lucide-react";
 import { NavLink } from "react-router";
 
 export default function Admin() {
@@ -30,6 +29,15 @@ export default function Admin() {
       buttonColor: "bg-red-600 hover:bg-red-700",
       iconColor: "text-red-600",
       route: "/admin/delete",
+    },
+    {
+      id: "video",
+      title: "Upload Video",
+      description: "Upload and Delete  video solution to the problem",
+      icon: Video, // Updated video icon
+      buttonColor: "bg-blue-600 hover:bg-blue-700", // Blue for upload action
+      iconColor: "text-blue-600", // Icon color matched
+      route: "/admin/video",
     },
   ];
 

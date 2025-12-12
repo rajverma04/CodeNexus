@@ -1,7 +1,8 @@
 const Problem = require("../models/problems");
 const Submission = require("../models/submission");
 const User = require("../models/user");
-const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility")
+const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility");
+const SolutionVideo = require("../models/solutionVideos")
 
 const createProblem = async (req, res) => {
     const { title, description, difficulty,
@@ -128,6 +129,19 @@ const getProblemById = async (req, res) => {
         if (!getProblem) {
             return res.status(404).send("Problem is missing");
         }
+
+        // get video url also for problem
+        const videos = await SolutionVideo.findOne({ problemId: id })
+        if (videos) {
+            getProblem.secureURL = secureURL;
+            getProblem.cloudinaryPublicId = cloudinaryPublicId;
+            getProblem.thumbnailURL = thumbnailURL;
+            getProblem.duration = duration;
+
+            return res.status(201).send(getProblem);
+        }
+
+        // if video does not exist the this below will return
         res.status(200).send(getProblem);
     } catch (err) {
         res.status(500).send("Error: " + err);
