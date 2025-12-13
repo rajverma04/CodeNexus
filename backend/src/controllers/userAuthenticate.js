@@ -29,7 +29,7 @@ const register = async (req, res) => {
         }
 
 
-        res.cookie("token", token, { maxAge: 3600 * 1000 });     //! maxAge: lifetime of the cookie in milliseconds.
+        res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });     //! maxAge: lifetime of the cookie in milliseconds.
 
         // res.status(201).send("User Registered Successfully");
         res.status(201).json({
@@ -65,7 +65,7 @@ const login = async (req, res) => {
             role: user.role
         }
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
-        res.cookie("token", token, { maxAge: 3600 * 1000 });
+        res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });
 
         // res.status(200).send("Logged In Successfully");
         res.status(201).json({
@@ -90,7 +90,7 @@ const logout = async (req, res) => {
         await redisClient.set(`token:${token}`, "Blocked");
         await redisClient.expireAt(`token:${token}`, payload.exp)       // in payload expiry of token is present
 
-        res.cookie("token", null, { expires: new Date(Date.now()) });
+        res.cookie("token", null, { expires: new Date(Date.now()), sameSite: 'none', secure: true });
         res.send("Logged Out Successfully");
     } catch (err) {
         res.status(503).send("Error: " + err);
@@ -108,7 +108,7 @@ const adminRegister = async (req, res) => {
 
         const user = await User.create(req.body);       //! hash password before creating user profile
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
-        res.cookie("token", token, { maxAge: 3600 * 1000 });     //! maxAge: lifetime of the cookie in milliseconds.
+        res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });     //! maxAge: lifetime of the cookie in milliseconds.
 
         res.status(201).send("User Registered Successfully");
     } catch (err) {
