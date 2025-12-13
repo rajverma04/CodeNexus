@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../utils/axiosClient";
 import { NavLink } from "react-router";
-
+import { useNavigate } from "react-router";
 /**
  * AdminDelete
  * - Fetch problems
@@ -16,7 +16,7 @@ function AdminVideo() {
   const [loading, setLoading] = useState(true); // for initial fetch
   const [error, setError] = useState(null);
   const [alert, setAlert] = useState(null); // { type: 'success'|'error', message }
-
+  const navigate = useNavigate();
   // modal state
   const [confirmModal, setConfirmModal] = useState({
     open: false,
@@ -30,7 +30,7 @@ function AdminVideo() {
       setLoading(true);
       setError(null);
       const { data } = await axiosClient.get("/problem/getAllProblems");
-      setProblems(Array.isArray(data) ? data : []);
+      setProblems(data);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch problems. Please try again.");
@@ -61,7 +61,7 @@ function AdminVideo() {
       await axiosClient.delete(`/video/delete/${id}`);
 
       // remove from list
-      setProblems((prev) => prev.filter((p) => p._id !== id));
+      setProblems((problem) => problem._id !== id);
 
       setAlert({ type: "success", message: "Problem deleted successfully." });
       closeConfirm();
@@ -75,6 +75,10 @@ function AdminVideo() {
     }
   };
 
+  const handleFileSelect = (id) => {
+    navigate(`/admin/upload/${id}`);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-6xl mx-auto">
@@ -85,11 +89,10 @@ function AdminVideo() {
         {/* Alert */}
         {alert && (
           <div
-            className={`mb-6 p-4 rounded-md shadow ${
-              alert.type === "success"
+            className={`mb-6 p-4 rounded-md shadow ${alert.type === "success"
                 ? "bg-green-50 text-green-800"
                 : "bg-red-50 text-red-800"
-            }`}
+              }`}
           >
             {alert.message}
             <button
@@ -171,13 +174,12 @@ function AdminVideo() {
 
                       <td className="px-4 py-4 align-top">
                         <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            problem.difficulty === "easy"
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${problem.difficulty === "easy"
                               ? "bg-green-100 text-green-800"
                               : problem.difficulty === "medium"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
+                                ? "bg-amber-100 text-amber-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
                         >
                           {problem.difficulty}
                         </span>

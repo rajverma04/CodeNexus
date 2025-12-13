@@ -263,12 +263,15 @@ function AdminUpload() {
         upload_url,
       } = signatureResponse.data;
 
+      console.log("Signature:", signatureResponse.data.signature);
+      console.log("Timestamp:", signatureResponse.data.timestamp);
+
       const formData = new FormData();
-      formData.append("file", file);
       formData.append("signature", signature);
       formData.append("timestamp", timestamp);
       formData.append("public_id", public_id);
       formData.append("api_key", api_key);
+      formData.append("file", file);
 
       const uploadResponse = await axios.post(upload_url, formData, {
         headers: {
@@ -294,11 +297,13 @@ function AdminUpload() {
       setUploadedVideo(metadataResponse.data.videoSolution);
       reset();
     } catch (err) {
-      console.log("Upload Error: ", err);
+      console.error("Upload Error Details:", err.response?.data);
       setError("root", {
         type: "manual",
         message:
-          err?.response?.data?.message || "Upload failed. Please try again.",
+          err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          "Upload failed. Please try again.",
       });
     } finally {
       setUploading(false);

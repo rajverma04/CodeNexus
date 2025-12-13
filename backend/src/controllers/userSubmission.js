@@ -9,7 +9,7 @@ const submitCode = async (req, res) => {
 
         let { code, language } = req.body;
 
-        if(language == "cpp") {     // monaco editor uses cpp but judg0 use c++
+        if (language === "cpp") {     // monaco editor uses cpp but judg0 use c++
             language = "c++";
         }
         if (!userId || !problemId || !code || !language) {
@@ -81,9 +81,9 @@ const submitCode = async (req, res) => {
         }
 
         // res.status(201).send(submittedResult);
-        const accespted = (status == "accepted");
+        const accepted = (status == "accepted");
         res.status(201).json({
-            accespted,      // true or false
+            accepted,      // true or false
             totalTestCases: submittedResult.testCasesTotal,
             passedTestCases: testCasesPassed,
             runtime,
@@ -130,13 +130,13 @@ const runCode = async (req, res) => {
         let status = true;
         let errorMessage = null;
 
-        for(const test of testResult) {
-            if(test.status_id == 3) {
+        for (const test of testResult) {
+            if (test.status_id == 3) {
                 testCasesPassed++;
                 runtime = runtime + parseFloat(test.time);
                 memory = Math.max(memory, test.memory);
             } else {
-                if(test.status_id == 4) {
+                if (test.status_id == 4) {
                     status = false;
                     errorMessage = test.stderr;
                 } else {
@@ -144,7 +144,7 @@ const runCode = async (req, res) => {
                     errorMessage = test.stderr;
                 }
             }
-        }       
+        }
         // res.status(201).send(testResult);
         res.status(201).json({
             success: status,
@@ -156,11 +156,11 @@ const runCode = async (req, res) => {
 
 
     } catch (err) {
-        res.status(500).send("Error:"  + err);
+        res.status(500).send("Error:" + err);
     }
 }
 
-module.exports = {submitCode, runCode};
+module.exports = { submitCode, runCode };
 
 
 

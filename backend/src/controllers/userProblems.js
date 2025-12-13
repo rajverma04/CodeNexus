@@ -124,7 +124,8 @@ const getProblemById = async (req, res) => {
         // const getProblem = await Problem.findById(id);
 
         // to get only selected 
-        const getProblem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases startCode referenceSolution");     // it will fetch only selected field
+        // to get only selected 
+        const getProblem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution");     // it will fetch only selected field
 
         if (!getProblem) {
             return res.status(404).send("Problem is missing");
@@ -133,12 +134,14 @@ const getProblemById = async (req, res) => {
         // get video url also for problem
         const videos = await SolutionVideo.findOne({ problemId: id })
         if (videos) {
-            getProblem.secureURL = secureURL;
-            getProblem.cloudinaryPublicId = cloudinaryPublicId;
-            getProblem.thumbnailURL = thumbnailURL;
-            getProblem.duration = duration;
+            // Mongoose results are immutable by default, convert to object to add properties
+            const problemObj = getProblem.toObject();
+            problemObj.secureURL = videos.secureURL;
+            problemObj.cloudinaryPublicId = videos.cloudinaryPublicId;
+            problemObj.thumbnailURL = videos.thumbnailURL;
+            problemObj.duration = videos.duration;
 
-            return res.status(201).send(getProblem);
+            return res.status(201).send(problemObj);
         }
 
         // if video does not exist the this below will return

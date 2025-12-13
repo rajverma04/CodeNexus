@@ -13,7 +13,7 @@ cloudinary.config({
 const generateUploadSignature = async (req, res) => {
     try {
         const { problemId } = req.params;       // from params
-        const userId  = req.result._id;     // from admin middleware
+        const userId = req.result._id;     // from admin middleware
 
         const problem = await Problem.findById(problemId);
         if (!problem) {
@@ -37,14 +37,16 @@ const generateUploadSignature = async (req, res) => {
         // generate signature
         const signature = cloudinary.utils.api_sign_request(
             uploadParams,
-            process.env.CLOUDINARY_API_SECRET
+            process.env.CLOUDINARY_API_SECRET.trim()
         )
+
+
 
         res.json({
             signature,
             timestamp,
             public_id: publicId,
-            api_key: process.env.CLOUDINARY_API_KEY,
+            api_key: process.env.CLOUDINARY_API_KEY.trim(),
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
             upload_url: `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/video/upload`
         })
@@ -95,7 +97,7 @@ const saveVideoMetaData = async (req, res) => {
         }
 
         const thumbnailURL = cloudinary.url(cloudinaryResourse.public_id, {
-            resource_type: "image",
+            resource_type: "video",
             transformation: [
                 {
                     width: 400,
@@ -144,7 +146,7 @@ const saveVideoMetaData = async (req, res) => {
 const deleteVideo = async (req, res) => {
     try {
         const { problemId } = req.params;
-        const userId  = req.result._id;
+        const userId = req.result._id;
 
         const video = await SolutionVideo.findOneAndDelete({ problemId: problemId });
         if (!video) {

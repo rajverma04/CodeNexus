@@ -9,6 +9,7 @@ import Admin from "./Pages/Admin";
 import AdminCreate from "./Components/AdminCreate";
 import AdminDelete from "./Components/AdminDelete";
 import AdminUpdate from "./Components/AdminUpdate";
+import AdminUpdateForm from "./Components/AdminUpdateForm";
 // import ProblemPage from "./Pages/ProblemPage";
 import ProblemEditor from "./Pages/ProblemEditor";
 import AdminVideo from "./Components/AdminVideo";
@@ -19,7 +20,7 @@ function App() {
   const { isAuthenticated, user, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  console.log(user);
+  // console.log(user);
   // check initial authentication
 
   useEffect(() => {
@@ -84,12 +85,24 @@ function App() {
           }
         ></Route>
 
-        {/* Update Problem */}
+        {/* Update Problem List */}
         <Route
           path="/admin/update"
           element={
             isAuthenticated && user?.role == "admin" ? (
               <AdminUpdate />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        ></Route>
+
+        {/* Update Problem Form */}
+        <Route
+          path="/admin/update/:id"
+          element={
+            isAuthenticated && user?.role == "admin" ? (
+              <AdminUpdateForm />
             ) : (
               <Navigate to="/" />
             )
