@@ -40,7 +40,17 @@ const generateUploadSignature = async (req, res) => {
             process.env.CLOUDINARY_API_SECRET.trim()
         )
 
+        // Check if env vars are loaded
+        console.log("CLOUDINARY CONFIG:", {
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret_exists: !!process.env.CLOUDINARY_API_SECRET
+        });
 
+        console.log("SIGNATURE PARAMS:", {
+            uploadParams,
+            signature
+        });
 
         res.json({
             signature,
