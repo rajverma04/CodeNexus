@@ -13,7 +13,7 @@ const chalk = require("chalk");
 const videoRouter = require("./routes/videoCreator");
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true
 }))
 
@@ -50,3 +50,6 @@ initializeConnection();
 //         })
 //     })
 //     .catch(err => console.log("Error: " + err));
+
+// Export for Vercel serverless
+module.exports = app;
