@@ -1,15 +1,16 @@
 import { useForm } from "react-hook-form";
 import { Send } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import axiosClient from "../utils/axiosClient";
+import { useDispatch, useSelector } from "react-redux";
+import { addMessage } from "../chatSlice";
 
 const ChatAI = ({ problem, selectedLanguage }) => {
   const { register, handleSubmit, reset } = useForm();
 
-  const [messages, setMessages] = useState([
-    { role: "model", parts: [{ text: "Hi, How are you?" }] },
-    { role: "user", parts: [{ text: "I am good" }] },
-  ]);
+  // Use Redux state
+  const messages = useSelector((state) => state.chat.messages);
+  const dispatch = useDispatch();
 
   const messageEndRef = useRef(null);
 
@@ -19,41 +20,39 @@ const ChatAI = ({ problem, selectedLanguage }) => {
 
   // ChatAI.jsx — submit handler (example)
   const onSubmit = async (data) => {
-    // Build updatedMessages from current state + new user message
-    const updatedMessages = [
-      ...messages,
-      { role: "user", parts: [{ text: data.message }] },
-    ];
+    // 1. Optimistically append user message to Redux
+    const userMsg = { role: "user", parts: [{ text: data.message }] };
+    dispatch(addMessage(userMsg));
 
-    // Immediately update UI with user's message
-    setMessages(updatedMessages);
+    // We need the *new* list strictly for the API call context.
+    // Because Redux update might be async or we just want a clean reference:
+    const updatedMessages = [...messages, userMsg];
+
     reset();
 
     try {
       const { data: resp } = await axiosClient.post("/ai/chat", {
-        messages: updatedMessages,            // send the up-to-date array
+        messages: updatedMessages,
         title: problem.title,
         description: problem.description,
         testCases: problem.visibleTestCases,
         startCode: problem.startCode,
         selectedLanguage: selectedLanguage,
       }, {
-        timeout: 20000, // 20s, increase if needed
+        timeout: 20000,
       });
 
       // If server returns model text
       const modelText = resp?.message ?? "No response text";
 
-      // Append model reply
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "model",
-          parts: [{ text: modelText }],
-        },
-      ]);
+      // 2. Append model reply
+      dispatch(addMessage({
+        role: "model",
+        parts: [{ text: modelText }],
+      }));
+
     } catch (err) {
-      // Show more helpful error in UI (if server returned JSON message)
+      // Show more helpful error in UI
       let errMsg = "Sorry, Error in chatbot";
 
       if (err?.response?.data?.message) {
@@ -62,13 +61,10 @@ const ChatAI = ({ problem, selectedLanguage }) => {
         errMsg = `Network/Error: ${err.message}`;
       }
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "model",
-          parts: [{ text: errMsg }],
-        },
-      ]);
+      dispatch(addMessage({
+        role: "model",
+        parts: [{ text: errMsg }],
+      }));
 
       console.error("chat request error:", err);
     }

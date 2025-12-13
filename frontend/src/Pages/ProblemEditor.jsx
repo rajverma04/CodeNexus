@@ -5,6 +5,8 @@ import { useParams } from "react-router";
 import axiosClient from "../utils/axiosClient";
 import SubmissionHistory from "../Components/SubmissionHistory";
 import ChatAI from "../Components/ChatAI";
+import { useDispatch } from "react-redux";
+import { clearChat } from "../chatSlice";
 
 // todo: language map
 const languageMap = {
@@ -15,7 +17,7 @@ const languageMap = {
 
 const ProblemEditor = () => {
   const [problem, setProblem] = useState(null);
-  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+  const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [runResult, setRunResult] = useState(null);
@@ -24,8 +26,14 @@ const ProblemEditor = () => {
   const [activeRightTab, setActiveRightTab] = useState("code");
   const editorRef = useRef(null);
   let { problemId } = useParams();
+  const dispatch = useDispatch();
 
   const { handleSubmit } = useForm();
+
+  // Clear chat when switching problems
+  useEffect(() => {
+    dispatch(clearChat());
+  }, [problemId, dispatch]);
 
   // Fetch problem data
   useEffect(() => {
