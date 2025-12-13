@@ -353,7 +353,7 @@ const ProblemEditor = () => {
               {/* Language Selector */}
               <div className="flex justify-between items-center p-4 border-b border-base-300">
                 <div className="flex gap-2">
-                  {["javascript", "java", "cpp"].map((lang) => (
+                  {["cpp", "java", "javascript"].map((lang) => (
                     <button
                       key={lang}
                       className={`btn btn-sm ${
