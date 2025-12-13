@@ -7,6 +7,11 @@ import SubmissionHistory from "../Components/SubmissionHistory";
 import ChatAI from "../Components/ChatAI";
 
 // todo: language map
+const languageMap = {
+  javascript: "javascript",
+  java: "java",
+  cpp: "c++",
+};
 
 const ProblemEditor = () => {
   const [problem, setProblem] = useState(null);
@@ -32,25 +37,12 @@ const ProblemEditor = () => {
         );
 
         const initialCode =
-          response.data.startCode.find((sc) => {
-            if (sc.language == "c++" && selectedLanguage == "cpp") return true;
-            else if (sc.language == "java" && selectedLanguage == "java")
-              return true;
-            else if (
-              sc.language == "javascript" &&
-              selectedLanguage == "javascript"
-            )
-              return true;
-
-            return false;
-          })?.initialCode || "Hello";
-
-        console.log(initialCode);
+          response.data.startCode.find(
+            (sc) => sc.language === languageMap[selectedLanguage]
+          )?.initialCode || "";
         setProblem(response.data);
-        // console.log(response.data.startCode);
-
-        console.log(initialCode);
         setCode(initialCode);
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching problem:", error);
@@ -65,8 +57,9 @@ const ProblemEditor = () => {
   useEffect(() => {
     if (problem) {
       const initialCode =
-        problem.startCode.find((sc) => sc.language === selectedLanguage)
-          ?.initialCode || "";
+        problem.startCode.find(
+          (sc) => sc.language === languageMap[selectedLanguage]
+        )?.initialCode || "";
       setCode(initialCode);
     }
   }, [selectedLanguage, problem]);
@@ -204,9 +197,7 @@ const ProblemEditor = () => {
             Submissions
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "chatAI" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "chatAI" ? "tab-active" : ""}`}
             onClick={() => setActiveLeftTab("chatAI")}
           >
             Chat AI
@@ -317,7 +308,10 @@ const ProblemEditor = () => {
                   <h2 className="text-xl font-bold mb-4">Chat with AI</h2>
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
                     {/* {"You can chat with AI here..."} */}
-                    <ChatAI problem={problem} selectedLanguage = {selectedLanguage}/>
+                    <ChatAI
+                      problem={problem}
+                      selectedLanguage={selectedLanguage}
+                    />
                   </div>
                 </div>
               )}
@@ -469,7 +463,7 @@ const ProblemEditor = () => {
                               key={i}
                               className="bg-base-100 p-3 rounded text-xs"
                             >
-                              <div className="font-mono">
+                              <div className="font-mono text-white">
                                 <div>
                                   <strong>Input:</strong> {tc.stdin}
                                 </div>
@@ -480,7 +474,7 @@ const ProblemEditor = () => {
                                 <div>
                                   <strong>Output:</strong> {tc.stdout}
                                 </div>
-                                <div className={"text-green-600"}>
+                                <div className={"text-green-500"}>
                                   {"✓ Passed"}
                                 </div>
                               </div>
