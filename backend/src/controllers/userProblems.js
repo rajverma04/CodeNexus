@@ -124,7 +124,6 @@ const getProblemById = async (req, res) => {
         // const getProblem = await Problem.findById(id);
 
         // to get only selected 
-        // to get only selected 
         const getProblem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution");     // it will fetch only selected field
 
         if (!getProblem) {
@@ -134,12 +133,14 @@ const getProblemById = async (req, res) => {
         // get video url also for problem
         const videos = await SolutionVideo.findOne({ problemId: id })
         if (videos) {
-            // Mongoose results are immutable by default, convert to object to add properties
-            const problemObj = getProblem.toObject();
-            problemObj.secureURL = videos.secureURL;
-            problemObj.cloudinaryPublicId = videos.cloudinaryPublicId;
-            problemObj.thumbnailURL = videos.thumbnailURL;
-            problemObj.duration = videos.duration;
+
+            const problemObj = {        // Mongoose results are immutable by default, convert to javascript object to add properties
+                ...getProblem.toObject(),
+                secureURL: videos.secureURL,
+                cloudinaryPublicId: videos.cloudinaryPublicId,
+                thumbnailURL: videos.thumbnailURL,
+                duration: videos.duration,
+            }
 
             return res.status(201).send(problemObj);
         }
