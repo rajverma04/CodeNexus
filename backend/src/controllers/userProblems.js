@@ -1,7 +1,8 @@
 const Problem = require("../models/problems");
 const Submission = require("../models/submission");
 const User = require("../models/user");
-const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility")
+const { getLanguageById, submitBatch, submitToken } = require("../utils/problemUtility");
+const SolutionVideo = require("../models/solutionVideos")
 
 const createProblem = async (req, res) => {
     const { title, description, difficulty,
@@ -123,11 +124,27 @@ const getProblemById = async (req, res) => {
         // const getProblem = await Problem.findById(id);
 
         // to get only selected 
-        const getProblem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases startCode referenceSolution");     // it will fetch only selected field
+        // to get only selected 
+        const getProblem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution");     // it will fetch only selected field
 
         if (!getProblem) {
             return res.status(404).send("Problem is missing");
         }
+
+        // get video url also for problem
+        const videos = await SolutionVideo.findOne({ problemId: id })
+        if (videos) {
+            // Mongoose results are immutable by default, convert to object to add properties
+            const problemObj = getProblem.toObject();
+            problemObj.secureURL = videos.secureURL;
+            problemObj.cloudinaryPublicId = videos.cloudinaryPublicId;
+            problemObj.thumbnailURL = videos.thumbnailURL;
+            problemObj.duration = videos.duration;
+
+            return res.status(201).send(problemObj);
+        }
+
+        // if video does not exist the this below will return
         res.status(200).send(getProblem);
     } catch (err) {
         res.status(500).send("Error: " + err);

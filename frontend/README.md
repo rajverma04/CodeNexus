@@ -6,3 +6,5 @@
 # hookform/resolvers
 
 # createasyncthunk in redux?
+
+# profile page

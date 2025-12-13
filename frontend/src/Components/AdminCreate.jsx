@@ -99,28 +99,29 @@ export default function AdminCreate() {
     name: "hiddenTestCases",
   });
 
- const onSubmit = async (data) => {
-  setServerError(null);
-  setSubmitting(true);
-  setToast(null);
+  const onSubmit = async (data) => {
+    setServerError(null);
+    setSubmitting(true);
+    setToast(null);
 
-  try {
-    const res = await axiosClient.post("/problem/create", data);
+    try {
+      const res = await axiosClient.post("/problem/create", data);
 
-    setToast("Problem created successfully!");
+      setSuccessData(res.data);
+      setToast("Problem created successfully!");
 
-    // Auto-hide toast after 3 sec
-    setTimeout(() => setToast(null), 3000);
+      // Auto-hide toast after 3 sec
+      setTimeout(() => setToast(null), 3000);
 
-    setSubmitting(false);
-  } catch (err) {
-    console.error(err);
-    setServerError(
-      err.response?.data?.message || err.message || "Failed to create problem"
-    );
-    setSubmitting(false);
-  }
-};
+      setSubmitting(false);
+    } catch (err) {
+      console.error(err);
+      setServerError(
+        err.response?.data?.message || err.message || "Failed to create problem"
+      );
+      setSubmitting(false);
+    }
+  };
 
 
   const handleGoAdmin = () => navigate("/admin");
@@ -148,7 +149,7 @@ export default function AdminCreate() {
   };
 
   return (
-    
+
     <div className="min-h-screen bg-slate-900 p-8 relative">
       {/* Loader overlay: shows only when submitting */}
       {submitting && (
@@ -207,6 +208,13 @@ export default function AdminCreate() {
           </div>
         )}
 
+        {/* Toast Notification */}
+        {toast && (
+          <div className="fixed top-5 right-5 z-50 rounded-md bg-emerald-600 px-4 py-2 text-white shadow-lg animate-bounce">
+            {toast}
+          </div>
+        )}
+
         {/* Success confirmation (shown after successful POST) */}
         {successData && (
           <div className="rounded-md bg-green-600/10 border border-green-400 p-4 text-green-100 space-y-3">
@@ -255,9 +263,8 @@ export default function AdminCreate() {
                 <label className="text-sm text-slate-300">Title</label>
                 <input
                   {...register("title")}
-                  className={`mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 ${
-                    errors.title ? "ring-1 ring-rose-500" : "border-slate-700"
-                  }`}
+                  className={`mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 ${errors.title ? "ring-1 ring-rose-500" : "border-slate-700"
+                    }`}
                   placeholder="Problem title"
                   disabled={submitting}
                 />
@@ -268,9 +275,8 @@ export default function AdminCreate() {
                 <label className="text-sm text-slate-300">Description</label>
                 <textarea
                   {...register("description")}
-                  className={`mt-2 block w-full rounded-md border bg-slate-900 px-3 py-3 text-slate-100 placeholder-slate-500 h-40 ${
-                    errors.description ? "ring-1 ring-rose-500" : "border-slate-700"
-                  }`}
+                  className={`mt-2 block w-full rounded-md border bg-slate-900 px-3 py-3 text-slate-100 placeholder-slate-500 h-40 ${errors.description ? "ring-1 ring-rose-500" : "border-slate-700"
+                    }`}
                   placeholder="Describe the problem..."
                   disabled={submitting}
                 />

@@ -5,12 +5,19 @@ import { useParams } from "react-router";
 import axiosClient from "../utils/axiosClient";
 import SubmissionHistory from "../Components/SubmissionHistory";
 import ChatAI from "../Components/ChatAI";
+import { useDispatch } from "react-redux";
+import { clearChat } from "../chatSlice";
 
 // todo: language map
+const languageMap = {
+  javascript: "javascript",
+  java: "java",
+  cpp: "c++",
+};
 
 const ProblemEditor = () => {
   const [problem, setProblem] = useState(null);
-  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
+  const [selectedLanguage, setSelectedLanguage] = useState("cpp");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [runResult, setRunResult] = useState(null);
@@ -19,8 +26,14 @@ const ProblemEditor = () => {
   const [activeRightTab, setActiveRightTab] = useState("code");
   const editorRef = useRef(null);
   let { problemId } = useParams();
+  const dispatch = useDispatch();
 
   const { handleSubmit } = useForm();
+
+  // Clear chat when switching problems
+  useEffect(() => {
+    dispatch(clearChat());
+  }, [problemId, dispatch]);
 
   // Fetch problem data
   useEffect(() => {
@@ -32,25 +45,12 @@ const ProblemEditor = () => {
         );
 
         const initialCode =
-          response.data.startCode.find((sc) => {
-            if (sc.language == "c++" && selectedLanguage == "cpp") return true;
-            else if (sc.language == "java" && selectedLanguage == "java")
-              return true;
-            else if (
-              sc.language == "javascript" &&
-              selectedLanguage == "javascript"
-            )
-              return true;
-
-            return false;
-          })?.initialCode || "Hello";
-
-        console.log(initialCode);
+          response.data.startCode.find(
+            (sc) => sc.language === languageMap[selectedLanguage]
+          )?.initialCode || "";
         setProblem(response.data);
-        // console.log(response.data.startCode);
-
-        console.log(initialCode);
         setCode(initialCode);
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching problem:", error);
@@ -65,8 +65,9 @@ const ProblemEditor = () => {
   useEffect(() => {
     if (problem) {
       const initialCode =
-        problem.startCode.find((sc) => sc.language === selectedLanguage)
-          ?.initialCode || "";
+        problem.startCode.find(
+          (sc) => sc.language === languageMap[selectedLanguage]
+        )?.initialCode || "";
       setCode(initialCode);
     }
   }, [selectedLanguage, problem]);
@@ -90,7 +91,7 @@ const ProblemEditor = () => {
     try {
       const response = await axiosClient.post(`/submission/run/${problemId}`, {
         code,
-        language: selectedLanguage,
+        language: languageMap[selectedLanguage] || selectedLanguage,
       });
 
       setRunResult(response.data);
@@ -116,7 +117,7 @@ const ProblemEditor = () => {
         `/submission/submit/${problemId}`,
         {
           code: code,
-          language: selectedLanguage,
+          language: languageMap[selectedLanguage] || selectedLanguage,
         }
       );
 
@@ -172,41 +173,35 @@ const ProblemEditor = () => {
         {/* Left Tabs */}
         <div className="tabs tabs-bordered bg-base-200 px-4">
           <button
-            className={`tab ${
-              activeLeftTab === "description" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "description" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("description")}
           >
             Description
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "editorial" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "editorial" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("editorial")}
           >
             Editorial
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "solutions" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "solutions" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("solutions")}
           >
             Solutions
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "submissions" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "submissions" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("submissions")}
           >
             Submissions
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "chatAI" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "chatAI" ? "tab-active" : ""}`}
             onClick={() => setActiveLeftTab("chatAI")}
           >
             Chat AI
@@ -295,10 +290,10 @@ const ProblemEditor = () => {
                         </div>
                       </div>
                     )) || (
-                      <p className="text-gray-500">
-                        Solutions will be available after you solve the problem.
-                      </p>
-                    )}
+                        <p className="text-gray-500">
+                          Solutions will be available after you solve the problem.
+                        </p>
+                      )}
                   </div>
                 </div>
               )}
@@ -317,7 +312,10 @@ const ProblemEditor = () => {
                   <h2 className="text-xl font-bold mb-4">Chat with AI</h2>
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
                     {/* {"You can chat with AI here..."} */}
-                    <ChatAI problem={problem} selectedLanguage = {selectedLanguage}/>
+                    <ChatAI
+                      problem={problem}
+                      selectedLanguage={selectedLanguage}
+                    />
                   </div>
                 </div>
               )}
@@ -337,9 +335,8 @@ const ProblemEditor = () => {
             Code
           </button>
           <button
-            className={`tab ${
-              activeRightTab === "testcase" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeRightTab === "testcase" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveRightTab("testcase")}
           >
             Testcase
@@ -359,19 +356,18 @@ const ProblemEditor = () => {
               {/* Language Selector */}
               <div className="flex justify-between items-center p-4 border-b border-base-300">
                 <div className="flex gap-2">
-                  {["javascript", "java", "cpp"].map((lang) => (
+                  {["cpp", "java", "javascript"].map((lang) => (
                     <button
                       key={lang}
-                      className={`btn btn-sm ${
-                        selectedLanguage === lang ? "btn-primary" : "btn-ghost"
-                      }`}
+                      className={`btn btn-sm ${selectedLanguage === lang ? "btn-primary" : "btn-ghost"
+                        }`}
                       onClick={() => handleLanguageChange(lang)}
                     >
                       {lang === "cpp"
                         ? "C++"
                         : lang === "javascript"
-                        ? "JavaScript"
-                        : "Java"}
+                          ? "JavaScript"
+                          : "Java"}
                     </button>
                   ))}
                 </div>
@@ -421,18 +417,16 @@ const ProblemEditor = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className={`btn btn-outline btn-sm ${
-                      loading ? "loading" : ""
-                    }`}
+                    className={`btn btn-outline btn-sm ${loading ? "loading" : ""
+                      }`}
                     onClick={handleRun}
                     disabled={loading}
                   >
                     Run
                   </button>
                   <button
-                    className={`btn btn-primary btn-sm ${
-                      loading ? "loading" : ""
-                    }`}
+                    className={`btn btn-primary btn-sm ${loading ? "loading" : ""
+                      }`}
                     onClick={handleSubmitCode}
                     disabled={loading}
                   >
@@ -448,9 +442,8 @@ const ProblemEditor = () => {
               <h3 className="font-semibold mb-4">Test Results</h3>
               {runResult ? (
                 <div
-                  className={`alert ${
-                    runResult.success ? "alert-success" : "alert-error"
-                  } mb-4`}
+                  className={`alert ${runResult.success ? "alert-success" : "alert-error"
+                    } mb-4`}
                 >
                   <div>
                     {runResult.success ? (
@@ -469,7 +462,7 @@ const ProblemEditor = () => {
                               key={i}
                               className="bg-base-100 p-3 rounded text-xs"
                             >
-                              <div className="font-mono">
+                              <div className="font-mono text-white">
                                 <div>
                                   <strong>Input:</strong> {tc.stdin}
                                 </div>
@@ -480,7 +473,7 @@ const ProblemEditor = () => {
                                 <div>
                                   <strong>Output:</strong> {tc.stdout}
                                 </div>
-                                <div className={"text-green-600"}>
+                                <div className={"text-green-500"}>
                                   {"✓ Passed"}
                                 </div>
                               </div>
@@ -538,9 +531,8 @@ const ProblemEditor = () => {
               <h3 className="font-semibold mb-4">Submission Result</h3>
               {submitResult ? (
                 <div
-                  className={`alert ${
-                    submitResult.accepted ? "alert-success" : "alert-error"
-                  }`}
+                  className={`alert ${submitResult.accepted ? "alert-success" : "alert-error"
+                    }`}
                 >
                   <div>
                     {submitResult.accepted ? (
