@@ -7,6 +7,7 @@ import SubmissionHistory from "../Components/SubmissionHistory";
 import ChatAI from "../Components/ChatAI";
 import { useDispatch } from "react-redux";
 import { clearChat } from "../chatSlice";
+import Editorial from "../Components/Editorial";
 
 // todo: language map
 const languageMap = {
@@ -173,29 +174,33 @@ const ProblemEditor = () => {
         {/* Left Tabs */}
         <div className="tabs tabs-bordered bg-base-200 px-4">
           <button
-            className={`tab ${activeLeftTab === "description" ? "tab-active" : ""
-              }`}
+            className={`tab ${
+              activeLeftTab === "description" ? "tab-active" : ""
+            }`}
             onClick={() => setActiveLeftTab("description")}
           >
             Description
           </button>
           <button
-            className={`tab ${activeLeftTab === "editorial" ? "tab-active" : ""
-              }`}
+            className={`tab ${
+              activeLeftTab === "editorial" ? "tab-active" : ""
+            }`}
             onClick={() => setActiveLeftTab("editorial")}
           >
             Editorial
           </button>
           <button
-            className={`tab ${activeLeftTab === "solutions" ? "tab-active" : ""
-              }`}
+            className={`tab ${
+              activeLeftTab === "solutions" ? "tab-active" : ""
+            }`}
             onClick={() => setActiveLeftTab("solutions")}
           >
             Solutions
           </button>
           <button
-            className={`tab ${activeLeftTab === "submissions" ? "tab-active" : ""
-              }`}
+            className={`tab ${
+              activeLeftTab === "submissions" ? "tab-active" : ""
+            }`}
             onClick={() => setActiveLeftTab("submissions")}
           >
             Submissions
@@ -264,7 +269,11 @@ const ProblemEditor = () => {
                 <div className="prose max-w-none">
                   <h2 className="text-xl font-bold mb-4">Editorial</h2>
                   <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                    {"Editorial is here for the problem"}
+                    <Editorial
+                      secureURL={problem.secureURL}
+                      thumbnailURL={problem.thumbnailURL}
+                      duration={problem.duration}
+                    />
                   </div>
                 </div>
               )}
@@ -290,10 +299,10 @@ const ProblemEditor = () => {
                         </div>
                       </div>
                     )) || (
-                        <p className="text-gray-500">
-                          Solutions will be available after you solve the problem.
-                        </p>
-                      )}
+                      <p className="text-gray-500">
+                        Solutions will be available after you solve the problem.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -335,8 +344,9 @@ const ProblemEditor = () => {
             Code
           </button>
           <button
-            className={`tab ${activeRightTab === "testcase" ? "tab-active" : ""
-              }`}
+            className={`tab ${
+              activeRightTab === "testcase" ? "tab-active" : ""
+            }`}
             onClick={() => setActiveRightTab("testcase")}
           >
             Testcase
@@ -359,15 +369,16 @@ const ProblemEditor = () => {
                   {["cpp", "java", "javascript"].map((lang) => (
                     <button
                       key={lang}
-                      className={`btn btn-sm ${selectedLanguage === lang ? "btn-primary" : "btn-ghost"
-                        }`}
+                      className={`btn btn-sm ${
+                        selectedLanguage === lang ? "btn-primary" : "btn-ghost"
+                      }`}
                       onClick={() => handleLanguageChange(lang)}
                     >
                       {lang === "cpp"
                         ? "C++"
                         : lang === "javascript"
-                          ? "JavaScript"
-                          : "Java"}
+                        ? "JavaScript"
+                        : "Java"}
                     </button>
                   ))}
                 </div>
@@ -417,16 +428,18 @@ const ProblemEditor = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className={`btn btn-outline btn-sm ${loading ? "loading" : ""
-                      }`}
+                    className={`btn btn-outline btn-sm ${
+                      loading ? "loading" : ""
+                    }`}
                     onClick={handleRun}
                     disabled={loading}
                   >
                     Run
                   </button>
                   <button
-                    className={`btn btn-primary btn-sm ${loading ? "loading" : ""
-                      }`}
+                    className={`btn btn-primary btn-sm ${
+                      loading ? "loading" : ""
+                    }`}
                     onClick={handleSubmitCode}
                     disabled={loading}
                   >
@@ -442,8 +455,9 @@ const ProblemEditor = () => {
               <h3 className="font-semibold mb-4">Test Results</h3>
               {runResult ? (
                 <div
-                  className={`alert ${runResult.success ? "alert-success" : "alert-error"
-                    } mb-4`}
+                  className={`alert ${
+                    runResult.success ? "alert-success" : "alert-error"
+                  } mb-4`}
                 >
                   <div>
                     {runResult.success ? (
@@ -531,8 +545,9 @@ const ProblemEditor = () => {
               <h3 className="font-semibold mb-4">Submission Result</h3>
               {submitResult ? (
                 <div
-                  className={`alert ${submitResult.accepted ? "alert-success" : "alert-error"
-                    }`}
+                  className={`alert ${
+                    submitResult.accepted ? "alert-success" : "alert-error"
+                  }`}
                 >
                   <div>
                     {submitResult.accepted ? (
