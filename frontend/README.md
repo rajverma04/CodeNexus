@@ -7,4 +7,12 @@
 
 # createasyncthunk in redux?
 
-# profile page
+# create user profile page section
+
+# manage admin profile in admin panel
+
+# search bar for problems searching in home page
+
+# user performance tracking 
+
+# google login and signup

@@ -21,6 +21,25 @@ app.use(cors({
 app.use(express.json());     // convert req.body data into JS object as it comes in JSON format 
 app.use(cookieParser());
 
+// API health
+app.get("/", async (req, res) => {
+    try {
+        res.status(200).json({
+            status: "ok",
+            service: "api",
+            uptime: process.uptime()
+        });
+    } catch (error) {
+        console.error("Health check failed:", error);
+
+        res.status(500).json({
+            status: "error",
+            message: "Health check failed"
+        });
+    }
+});
+
+
 app.use("/user", authRouter);
 app.use("/problem", problemRouter);
 app.use("/submission", submitRouter);

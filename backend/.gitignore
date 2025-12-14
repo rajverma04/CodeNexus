@@ -26,8 +26,7 @@ quesEx.json
 coverage/
 
 # Build output
-dist/
-build/
+
 
 # Cache
 .cache/
