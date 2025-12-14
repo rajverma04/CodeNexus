@@ -66,7 +66,6 @@ function Login() {
                     placeholder="john@example.com"
                     type="email"
                     className="input input-bordered w-full"
-                    value="rajverma@gmail.com"
                   />
                   {errors.emailId && (
                     <span className="text-red-500 text-xs mt-1">
@@ -85,7 +84,6 @@ function Login() {
                     type="password"
                     placeholder="Enter password"
                     className="input input-bordered w-full"
-                    value="Rajjo@123"
                   />
                   {errors.password && (
                     <span className="text-red-500 text-xs mt-1">
