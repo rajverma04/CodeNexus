@@ -1,14 +1,14 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axiosClient from './utils/axiosClient';
 import axios from 'axios';
 
 export const registerUser = createAsyncThunk(
     'auth/register',    // api
-    async (userData, {rejectWithValue}) => {        // on submitted form data will be sent to userData
+    async (userData, { rejectWithValue }) => {        // on submitted form data will be sent to userData
         try {
             const response = await axiosClient.post('/user/register', userData);        // post request to /user/register
             return response.data.user;      // sent data to payload
-        } catch(error) {
+        } catch (error) {
             return rejectWithValue(error);
         }
     }
@@ -16,11 +16,11 @@ export const registerUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
     'auth/login',
-    async (credentials, {rejectWithValue}) => {
+    async (credentials, { rejectWithValue }) => {
         try {
             const response = await axiosClient.post('/user/login', credentials);
             return response.data.user;
-        } catch(error) {
+        } catch (error) {
             return rejectWithValue(error);
         }
     }
@@ -28,11 +28,11 @@ export const loginUser = createAsyncThunk(
 
 export const checkAuth = createAsyncThunk(
     'auth/check',
-    async (_, {rejectWithValue}) => {       // _ no data is sending
+    async (_, { rejectWithValue }) => {       // _ no data is sending
         try {
-            const {data} = await axiosClient.get('/user/check');
+            const { data } = await axiosClient.get('/user/check');
             return data.user;
-        } catch(error) {
+        } catch (error) {
             return rejectWithValue(error);
         }
     }
@@ -41,11 +41,11 @@ export const checkAuth = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
     'auth/logout',
-    async(_, {rejectWithValue}) => {
+    async (_, { rejectWithValue }) => {
         try {
             await axiosClient.post('/user/logout');
             return null;
-        }catch(error) {
+        } catch (error) {
             return rejectWithValue(error);
         }
     }
@@ -112,7 +112,7 @@ const authSlice = createSlice({
                 state.error = action.payload?.message || "Something went wrong";
                 state.isAuthenticated = false;
                 state.user = null;
-            }) 
+            })
 
             // logout user cases
             .addCase(logoutUser.pending, (state) => {

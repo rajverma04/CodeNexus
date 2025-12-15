@@ -39,8 +39,7 @@ const userSchema = new Schema({
     problemSolved: {
         type: [{
             type: Schema.Types.ObjectId,        // unique solved stored
-            ref: "problem",
-            unique: true
+            ref: "problem"
         }],
     }
 }, { timestamps: true });

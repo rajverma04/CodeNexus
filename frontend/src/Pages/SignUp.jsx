@@ -132,6 +132,13 @@ function SignUp() {
                   )}
                 </div>
 
+                {/* API Error Message */}
+                {error && (
+                  <div className="text-red-500 text-sm text-center font-medium">
+                    {error}
+                  </div>
+                )}
+
                 {/* Submit */}
                 <button type="submit" className="btn btn-neutral w-full mt-2">
                   Sign Up

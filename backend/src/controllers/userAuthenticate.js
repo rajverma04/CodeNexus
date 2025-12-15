@@ -13,7 +13,7 @@ const register = async (req, res) => {
 
         // validate the data received from the user
         validate(req.body);        // send user data to validator to verify
-        const { fristName, emailId, password } = req.body;
+        const { firstName, emailId, password } = req.body;
 
         req.body.password = await bcrypt.hash(password, 10);        // TODO: hashing password
         req.body.role = "user";
@@ -22,7 +22,7 @@ const register = async (req, res) => {
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user" }, process.env.JWT_KEY, { expiresIn: 3600 });
 
         const reply = {
-            fristName: user.firstName,
+            firstName: user.firstName,
             emailId: user.emailId,
             _id: user._id,
             role: user.role
@@ -59,7 +59,7 @@ const login = async (req, res) => {
         }
 
         const reply = {     // only these data will be sent to frontend
-            fristName: user.firstName,
+            firstName: user.firstName,
             emailId: user.emailId,
             _id: user._id,
             role: user.role
@@ -101,7 +101,7 @@ const adminRegister = async (req, res) => {
     try {
 
         validate(req.body);
-        const { fristName, emailId, password } = req.body;
+        const { firstName, emailId, password } = req.body;
 
         req.body.password = await bcrypt.hash(password, 10);        // TODO: hashing password
 
