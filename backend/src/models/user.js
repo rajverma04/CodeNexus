@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 // this is pre Schema
 const userSchema = new Schema({
@@ -39,16 +39,16 @@ const userSchema = new Schema({
     problemSolved: {
         type: [{
             type: Schema.Types.ObjectId,        // unique solved stored
-            ref: "problem"
+            ref: "problem",
+            unique: true
         }],
-        unique: true
     }
-}, {timestamps: true});
+}, { timestamps: true });
 
 // it will run post(after the findOneByIDAndDelete) in the last to delete everyting related this to this userId
-userSchema.post("findOneAndDelete", async function (userInfo){
-    if(userInfo) {
-        await mongoose.model("submission").deleteMany({userId: userInfo_id});
+userSchema.post("findOneAndDelete", async function (userInfo) {
+    if (userInfo) {
+        await mongoose.model("submission").deleteMany({ userId: userInfo_id });
     }
 })
 
