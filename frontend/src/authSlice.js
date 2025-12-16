@@ -3,7 +3,7 @@ import axiosClient from './utils/axiosClient';
 import axios from 'axios';
 
 export const registerUser = createAsyncThunk(
-    'auth/register',    // api
+    'auth/register',    // action
     async (userData, { rejectWithValue }) => {        // on submitted form data will be sent to userData
         try {
             const response = await axiosClient.post('/user/register', userData);        // post request to /user/register
@@ -50,6 +50,32 @@ export const logoutUser = createAsyncThunk(
         }
     }
 )
+
+
+export const updateProfile = createAsyncThunk('auth/updateProfile', async (updatedData, { rejectWithValue }) => {
+    try {
+        // For example, make an API call to update the user profile
+        const response = await api.put('/user/profile', updatedData);
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
+export const googleLogin = createAsyncThunk(
+    "auth/googleLogin",
+    async (token, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/google-signin", {
+                token
+            });
+            return res.data.user;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
 
 const authSlice = createSlice({
     name: 'auth',
@@ -131,6 +157,24 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 state.user = null;
             })
+
+            // update profile
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true,
+                    state.error = null
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.loading = false,
+                    state.isAuthenticated = !!action.payload,
+                    state.user = action.payload
+            })
+
+            // google sign in
+            .addCase(googleLogin.fulfilled, (state, action) => {
+                state.isAuthenticated = true;
+                state.user = action.payload;
+            })
+
     }
 })
 

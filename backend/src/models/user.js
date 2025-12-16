@@ -29,26 +29,26 @@ const userSchema = new Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function () {
+            return this.authProvider !== "google";
+        }
     },
     role: {
         type: String,
         enum: ["admin", "user"],        // only these value will be set
         default: "user"
     },
-    // problemSolved: {
-    //     type: [{
-    //         type: Schema.Types.ObjectId,        // unique solved stored
-    //         ref: "problem"
-    //     }],
-    // }
-
     problemSolved: {
         type: [{
             type: Schema.Types.ObjectId,
             ref: "problem"
         }],
         default: []
+    },
+    authProvider: {
+        type: String,
+        enum: ["local", "google"],
+        default: "local"
     }
 
 }, { timestamps: true });
