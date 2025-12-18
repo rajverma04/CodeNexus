@@ -45,10 +45,24 @@ const userSchema = new Schema({
         }],
         default: []
     },
+
+    // authentication provider
     authProvider: {
         type: String,
         enum: ["local", "google"],
         default: "local"
+    },
+
+    // email verification
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: {
+        type: String,
+    },
+    emailVerificationExpireAt: {
+        type: Date,
     }
 
 }, { timestamps: true });

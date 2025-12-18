@@ -105,16 +105,36 @@ const adminRegister = async (req, res) => {
         validate(req.body);
         const { firstName, emailId, password } = req.body;
 
-        req.body.password = await bcrypt.hash(password, 10);        // TODO: hashing password
+        //! hash password before creating user profile
+        const hashedPassword = await bcrypt.hash(password, 10);        // TODO: hashing password
 
 
-        const user = await User.create(req.body);       //! hash password before creating user profile
+        const user = await User.create({
+            firstName,
+            emailId,
+            password: hashedPassword,
+            role: "admin"
+        });
+        // console.log(user)
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });     //! maxAge: lifetime of the cookie in milliseconds.
 
-        res.status(201).send("User Registered Successfully");
+        res.status(201).json({
+            message: "Admin registered successfully",
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                emailId: user.emailId,
+                role: user.role
+            }
+        });
     } catch (err) {
-        res.status(400).send("Error: " + err);      // 400: Bad request -> invalid request syntax or parameter
+        // res.status(400).send("Error: " + err);      // 400: Bad request -> invalid request syntax or parameter
+
+        res.status(400).json({
+            message: "Admin registration failed",
+            error: err.message
+        });
     }
 }
 
@@ -288,5 +308,78 @@ const googleSignIn = async (req, res) => {
     }
 };
 
+const verifyEmail = async (req, res) => {
+    try {
+        const { emailId, otp } = req.body;
 
-module.exports = { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn }
+        if (!emailId || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required" });
+        }
+
+        const user = await User.findOne({ emailId });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if verified
+        if (user.isEmailVerified) {
+            return res.status(400).json({ message: "Email is already verified" });
+        }
+
+        // Check OTP
+        if (user.emailVerificationToken !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        // Check Expiry
+        if (user.emailVerificationExpireAt < Date.now()) {
+            return res.status(400).json({ message: "OTP Expired" });
+        }
+
+        // Success
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpireAt = undefined;
+
+        await user.save();
+
+        res.status(200).json({ message: "Email Verified Successfully" });
+
+    } catch (err) {
+        res.status(500).json({ message: "Server Error", error: err.message });
+    }
+}
+
+
+const manageAccounts = async (req, res) => {
+    try {
+        // console.log("manageAccounts controller reached");
+        const allUsers = await User.find()
+            // .select("_id firstName lastName emailId age role problemSolved isEmailVerified")
+            .select("_id firstName emailId role problemSolved createdAt")
+            .lean();
+
+        // console.log(allUsers);
+        const orderedUsers = allUsers.map(u => ({
+            id: u._id,
+            firstName: u.firstName,
+            // lastName: u.lastName,
+            role: u.role,
+            emailId: u.emailId,
+            // age: u.age,
+            problemSolved: u.problemSolved,
+            // isEmailVerified: u.isEmailVerified,
+            createdAt: u.createdAt,
+        }));
+
+        res.status(200).json(orderedUsers);
+    } catch (err) {
+        console.log("Error: ", err);
+        res.status(500).json({
+            message: err.message
+        });
+    }
+}
+
+module.exports = { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts }

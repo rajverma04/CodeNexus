@@ -77,13 +77,40 @@ export const googleLogin = createAsyncThunk(
 );
 
 
+export const createAdmin = createAsyncThunk(
+    "auth/createAdmin",
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/admin/register", data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response.data.message);
+        }
+    }
+);
+
+
+export const manageUsers = createAsyncThunk(
+    "auth/manageUsers",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.get("/user/getAllUsers");
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
         user: null,         // admin or user
         isAuthenticated: false,
         loading: false,
-        error: null
+        usersLoading: false,
+        error: null,
+        usersList: []
     },
     reducers: {
     },
@@ -174,6 +201,36 @@ const authSlice = createSlice({
                 state.isAuthenticated = true;
                 state.user = action.payload;
             })
+
+            // create admin cases
+            .addCase(createAdmin.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createAdmin.fulfilled, (state, action) => {
+                state.loading = false;
+                state.error = null;
+                // ❌ do NOT change user or isAuthenticated
+            })
+            .addCase(createAdmin.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Failed to create admin";
+            })
+
+            // manage users cases
+            .addCase(manageUsers.pending, (state) => {
+                state.usersLoading = true;
+                state.error = null;
+            })
+            .addCase(manageUsers.fulfilled, (state, action) => {
+                state.usersLoading = false;
+                state.usersList = action.payload;
+            })
+            .addCase(manageUsers.rejected, (state, action) => {
+                state.usersLoading = false;
+                state.error = action.payload || "Failed to fetch users";
+            });
+
 
     }
 })

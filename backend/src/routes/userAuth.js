@@ -1,11 +1,14 @@
 const express = require("express");
 const authRouter = express.Router();
-const { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn } = require("../controllers/userAuthenticate");
+const { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts } = require("../controllers/userAuthenticate");
 const userMiddleware = require("../middleware/userMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 
 // register
 authRouter.post("/register", register);     // second parameter is controller(or can say function)
+
+// verify email
+authRouter.post("/verify-email", verifyEmail);
 
 // login
 authRouter.post("/login", login);
@@ -27,6 +30,11 @@ authRouter.post("/changepassword", userMiddleware, changePassword);
 
 // google signIn/signUp
 authRouter.post("/google-signin", googleSignIn);
+
+// get all users
+authRouter.get("/getAllUsers", adminMiddleware, manageAccounts);
+
+
 
 authRouter.get("/check", userMiddleware, (req, res) => {
     const reply = {

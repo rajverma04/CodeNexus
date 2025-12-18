@@ -6,7 +6,7 @@ import { checkAuth } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import Admin from "./Pages/Admin";
-import AdminCreate from "./Components/AdminCreate";
+import AdminCreate from "./Components/AdminCreateProblem";
 import AdminDelete from "./Components/AdminDelete";
 import AdminUpdate from "./Components/AdminUpdate";
 import AdminUpdateForm from "./Components/AdminUpdateForm";
@@ -14,6 +14,8 @@ import AdminUpdateForm from "./Components/AdminUpdateForm";
 import ProblemEditor from "./Pages/ProblemEditor";
 import AdminVideo from "./Components/AdminVideo";
 import AdminUpload from "./Components/AdminUpload";
+import AdminRegister from "./Components/AdminRegister";
+import ManageUsers from "./Components/ManageUsers";
 
 function App() {
   // check isAuthenticated
@@ -139,6 +141,30 @@ function App() {
           element={
             isAuthenticated && user?.role == "admin" ? (
               <AdminUpload />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        ></Route>
+
+        {/* Create new Admin */}
+        <Route
+          path="/admin/register"
+          element={
+            isAuthenticated && user?.role == "admin" ? (
+              <AdminRegister />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        ></Route>
+
+        {/* Manage Users */}
+        <Route
+          path="/admin/manageUsers"
+          element={
+            isAuthenticated && user?.role == "admin" ? (
+              <ManageUsers />
             ) : (
               <Navigate to="/" />
             )
