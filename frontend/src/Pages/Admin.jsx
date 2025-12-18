@@ -1,4 +1,4 @@
-import { Plus, Pencil, Trash, Video } from "lucide-react";
+import { Plus, Pencil, Trash, Video, Users } from "lucide-react";
 import { NavLink } from "react-router";
 
 export default function Admin() {
@@ -38,6 +38,25 @@ export default function Admin() {
       buttonColor: "bg-blue-600 hover:bg-blue-700", // Blue for upload action
       iconColor: "text-blue-600", // Icon color matched
       route: "/admin/video",
+    },
+    {
+      id: "admincreate",
+      title: "Create Admin",
+      description: "Add a new admin to the platform.",
+      icon: Plus,
+      buttonColor: "bg-green-600 hover:bg-green-700",
+      iconColor: "text-green-600",
+      route: "/admin/register",
+    },
+    {
+      id: "manageUsers",
+      title: "Manage Users",
+      description:
+        "View, manage, and control all registered users on the platform.",
+      icon: Users,
+      buttonColor: "bg-purple-600 hover:bg-purple-700",
+      iconColor: "text-purple-600",
+      route: "/admin/manageUsers",
     },
   ];
 

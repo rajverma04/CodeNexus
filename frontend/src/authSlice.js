@@ -3,7 +3,7 @@ import axiosClient from './utils/axiosClient';
 import axios from 'axios';
 
 export const registerUser = createAsyncThunk(
-    'auth/register',    // api
+    'auth/register',    // action
     async (userData, { rejectWithValue }) => {        // on submitted form data will be sent to userData
         try {
             const response = await axiosClient.post('/user/register', userData);        // post request to /user/register
@@ -51,13 +51,66 @@ export const logoutUser = createAsyncThunk(
     }
 )
 
+
+export const updateProfile = createAsyncThunk('auth/updateProfile', async (updatedData, { rejectWithValue }) => {
+    try {
+        // For example, make an API call to update the user profile
+        const response = await api.put('/user/profile', updatedData);
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
+export const googleLogin = createAsyncThunk(
+    "auth/googleLogin",
+    async (token, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/google-signin", {
+                token
+            });
+            return res.data.user;
+        } catch (err) {
+            return rejectWithValue(err.response.data);
+        }
+    }
+);
+
+
+export const createAdmin = createAsyncThunk(
+    "auth/createAdmin",
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/admin/register", data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response.data.message);
+        }
+    }
+);
+
+
+export const manageUsers = createAsyncThunk(
+    "auth/manageUsers",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.get("/user/getAllUsers");
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+)
+
 const authSlice = createSlice({
     name: 'auth',
     initialState: {
         user: null,         // admin or user
         isAuthenticated: false,
         loading: false,
-        error: null
+        usersLoading: false,
+        error: null,
+        usersList: []
     },
     reducers: {
     },
@@ -131,6 +184,54 @@ const authSlice = createSlice({
                 state.isAuthenticated = false;
                 state.user = null;
             })
+
+            // update profile
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true,
+                    state.error = null
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.loading = false,
+                    state.isAuthenticated = !!action.payload,
+                    state.user = action.payload
+            })
+
+            // google sign in
+            .addCase(googleLogin.fulfilled, (state, action) => {
+                state.isAuthenticated = true;
+                state.user = action.payload;
+            })
+
+            // create admin cases
+            .addCase(createAdmin.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createAdmin.fulfilled, (state, action) => {
+                state.loading = false;
+                state.error = null;
+                // ❌ do NOT change user or isAuthenticated
+            })
+            .addCase(createAdmin.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || "Failed to create admin";
+            })
+
+            // manage users cases
+            .addCase(manageUsers.pending, (state) => {
+                state.usersLoading = true;
+                state.error = null;
+            })
+            .addCase(manageUsers.fulfilled, (state, action) => {
+                state.usersLoading = false;
+                state.usersList = action.payload;
+            })
+            .addCase(manageUsers.rejected, (state, action) => {
+                state.usersLoading = false;
+                state.error = action.payload || "Failed to fetch users";
+            });
+
+
     }
 })
 

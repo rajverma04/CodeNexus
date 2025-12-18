@@ -46,6 +46,7 @@ const createProblem = async (req, res) => {
 
         res.status(201).send("Problem Saved Successfully");
     } catch (err) {
+        console.log("hello")
         res.status(400).send("Error: " + err);
     }
 }

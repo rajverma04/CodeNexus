@@ -13,7 +13,7 @@
 
 In the rapidly evolving landscape of software development, continuous practice and problem-solving are paramount. CodeNexus provides a unified ecosystem where users can solve algorithmic challenges, receive instant AI-driven assistance, watch solution tutorials, and track their progress in real-time. By integrating **Google Gemini AI** for intelligent doubt resolution and **Judge0** for multi-language code execution, the platform simulates a sophisticated technical interview environment.
 
-The project emphasizes not just coding practice, but holistic learning—offering visual explanations through video integration, performance analytics, and a seamless, responsive user interface. Whether for a beginner learning basic data structures or an advanced coder refining dynamic programming skills, CodeNexus serves as a comprehensive companion.
+The project emphasizes not just coding practice, but holistic learning—offering visual explanations through video integration, performance analytics, and a seamless, responsive user interface. Whether for a beginner learning basic basic data structures or an advanced coder refining dynamic programming skills, CodeNexus serves as a comprehensive companion.
 
 ---
 

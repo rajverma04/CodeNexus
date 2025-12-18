@@ -8,6 +8,7 @@ import ChatAI from "../Components/ChatAI";
 import { useDispatch } from "react-redux";
 import { clearChat } from "../chatSlice";
 import Editorial from "../Components/Editorial";
+import { Copy, Check } from "lucide-react";
 
 // todo: language map
 const languageMap = {
@@ -25,9 +26,24 @@ const ProblemEditor = () => {
   const [submitResult, setSubmitResult] = useState(null);
   const [activeLeftTab, setActiveLeftTab] = useState("description");
   const [activeRightTab, setActiveRightTab] = useState("code");
+  const [copiedIndex, setCopiedIndex] = useState(null);
   const editorRef = useRef(null);
   let { problemId } = useParams();
   const dispatch = useDispatch();
+
+  // copy code
+  const handleCopy = async (text, index) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedIndex(index);
+
+      setTimeout(() => {
+        setCopiedIndex(null);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy!", err);
+    }
+  };
 
   const { handleSubmit } = useForm();
 
@@ -174,33 +190,29 @@ const ProblemEditor = () => {
         {/* Left Tabs */}
         <div className="tabs tabs-bordered bg-base-200 px-4">
           <button
-            className={`tab ${
-              activeLeftTab === "description" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "description" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("description")}
           >
             Description
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "editorial" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "editorial" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("editorial")}
           >
             Editorial
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "solutions" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "solutions" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("solutions")}
           >
             Solutions
           </button>
           <button
-            className={`tab ${
-              activeLeftTab === "submissions" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeLeftTab === "submissions" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveLeftTab("submissions")}
           >
             Submissions
@@ -292,17 +304,40 @@ const ProblemEditor = () => {
                             {problem?.title} - {solution?.language}
                           </h3>
                         </div>
-                        <div className="p-4">
+
+                        <div className="p-4 relative">
+                          <button
+                            onClick={() =>
+                              handleCopy(solution.completeCode, index)
+                            }
+                            className={`absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border cursor-pointer ${copiedIndex === index
+                              ? "bg-success/10 text-success border-success/20"
+                              : "bg-base-100 hover:bg-base-200 text-base-content/70 hover:text-base-content border-base-200 hover:border-base-300 shadow-sm"
+                              }`}
+                          >
+                            {copiedIndex === index ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+
                           <pre className="bg-base-300 p-4 rounded text-sm overflow-x-auto">
-                            <code>{solution?.completeCode}</code>
+                            <code>{solution.completeCode}</code>
                           </pre>
                         </div>
                       </div>
                     )) || (
-                      <p className="text-gray-500">
-                        Solutions will be available after you solve the problem.
-                      </p>
-                    )}
+                        <p className="text-gray-500">
+                          Solutions will be available after you solve the problem.
+                        </p>
+                      )}
                   </div>
                 </div>
               )}
@@ -344,9 +379,8 @@ const ProblemEditor = () => {
             Code
           </button>
           <button
-            className={`tab ${
-              activeRightTab === "testcase" ? "tab-active" : ""
-            }`}
+            className={`tab ${activeRightTab === "testcase" ? "tab-active" : ""
+              }`}
             onClick={() => setActiveRightTab("testcase")}
           >
             Testcase
@@ -369,16 +403,15 @@ const ProblemEditor = () => {
                   {["cpp", "java", "javascript"].map((lang) => (
                     <button
                       key={lang}
-                      className={`btn btn-sm ${
-                        selectedLanguage === lang ? "btn-primary" : "btn-ghost"
-                      }`}
+                      className={`btn btn-sm ${selectedLanguage === lang ? "btn-primary" : "btn-ghost"
+                        }`}
                       onClick={() => handleLanguageChange(lang)}
                     >
                       {lang === "cpp"
                         ? "C++"
                         : lang === "javascript"
-                        ? "JavaScript"
-                        : "Java"}
+                          ? "JavaScript"
+                          : "Java"}
                     </button>
                   ))}
                 </div>
@@ -428,18 +461,16 @@ const ProblemEditor = () => {
                 </div>
                 <div className="flex gap-2">
                   <button
-                    className={`btn btn-outline btn-sm ${
-                      loading ? "loading" : ""
-                    }`}
+                    className={`btn btn-outline btn-sm ${loading ? "loading" : ""
+                      }`}
                     onClick={handleRun}
                     disabled={loading}
                   >
                     Run
                   </button>
                   <button
-                    className={`btn btn-primary btn-sm ${
-                      loading ? "loading" : ""
-                    }`}
+                    className={`btn btn-primary btn-sm ${loading ? "loading" : ""
+                      }`}
                     onClick={handleSubmitCode}
                     disabled={loading}
                   >
@@ -455,9 +486,8 @@ const ProblemEditor = () => {
               <h3 className="font-semibold mb-4">Test Results</h3>
               {runResult ? (
                 <div
-                  className={`alert ${
-                    runResult.success ? "alert-success" : "alert-error"
-                  } mb-4`}
+                  className={`alert ${runResult.success ? "alert-success" : "alert-error"
+                    } mb-4`}
                 >
                   <div>
                     {runResult.success ? (
@@ -545,9 +575,8 @@ const ProblemEditor = () => {
               <h3 className="font-semibold mb-4">Submission Result</h3>
               {submitResult ? (
                 <div
-                  className={`alert ${
-                    submitResult.accepted ? "alert-success" : "alert-error"
-                  }`}
+                  className={`alert ${submitResult.accepted ? "alert-success" : "alert-error"
+                    }`}
                 >
                   <div>
                     {submitResult.accepted ? (
