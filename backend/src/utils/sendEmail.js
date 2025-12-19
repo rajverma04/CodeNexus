@@ -1,34 +1,39 @@
-const nodemailer = require("nodemailer");
-
+const axios = require("axios");
 require("dotenv").config();
 
-const emailUser = process.env.EMAIL_USER;
-const emailPass = process.env.EMAIL_PASS;
-
-if (!emailUser || !emailPass) {
-  console.error("CRITICAL ERROR: EMAIL_USER or EMAIL_PASS is missing in .env file.");
-  console.log("User:", emailUser ? "Present" : "Missing");
-  console.log("Pass:", emailPass ? "Present" : "Missing");
-}
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 10000
-});
-
 const sendEmail = async ({ to, subject, html }) => {
-  await transporter.sendMail({
-    from: `"Code Nexus" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html
-  });
+  if (!process.env.BREVO_API_KEY) {
+    throw new Error("BREVO_API_KEY is missing in environment variables");
+  }
+
+  const data = {
+    sender: {
+      name: "CodeNexus",
+      email: process.env.EMAIL_USER // Verify this email in Brevo
+    },
+    to: [
+      {
+        email: to,
+        name: to
+      }
+    ],
+    subject: subject,
+    htmlContent: html
+  };
+
+  try {
+    await axios.post("https://api.brevo.com/v3/smtp/email", data, {
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json"
+      }
+    });
+    console.log("Email sent successfully via Brevo");
+  } catch (error) {
+    console.error("Brevo Email Error:", error.response?.data || error.message);
+    throw new Error("Failed to send email via Brevo");
+  }
 };
 
 module.exports = sendEmail;
