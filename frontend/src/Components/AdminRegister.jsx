@@ -24,7 +24,7 @@ const adminSignup = z.object({
 function AdminRegister() {
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState(null); // toast state
-  
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

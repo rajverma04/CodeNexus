@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router";
+import { Toaster } from "react-hot-toast";
 import HomePage from "./Pages/HomePage";
 import Login from "./Pages/Login";
 import SignUp from "./Pages/SignUp";
@@ -16,6 +17,7 @@ import AdminVideo from "./Components/AdminVideo";
 import AdminUpload from "./Components/AdminUpload";
 import AdminRegister from "./Components/AdminRegister";
 import ManageUsers from "./Components/ManageUsers";
+import UserProfile from "./Pages/UserProfile";
 
 function App() {
   // check isAuthenticated
@@ -39,6 +41,7 @@ function App() {
 
   return (
     <>
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
         {/* Home Route */}
         <Route
@@ -169,6 +172,12 @@ function App() {
               <Navigate to="/" />
             )
           }
+        ></Route>
+
+        {/* Profile */}
+        <Route
+          path="/profile"
+          element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />}
         ></Route>
 
         {/* <Route path="/problem/:problemId" element={<ProblemPage />}></Route> */}

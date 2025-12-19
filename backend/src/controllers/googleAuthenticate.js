@@ -11,7 +11,7 @@ async function verifyToken(token) {
             audience: process.env.CLIENT_ID,
         });
         const payload = ticket.getPayload();
-        console.log(payload)
+        // console.log(payload)
         return payload;
     } catch (error) {
         throw new Error('Token verification failed');

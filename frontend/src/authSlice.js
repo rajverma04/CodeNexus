@@ -54,13 +54,24 @@ export const logoutUser = createAsyncThunk(
 
 export const updateProfile = createAsyncThunk('auth/updateProfile', async (updatedData, { rejectWithValue }) => {
     try {
-        // For example, make an API call to update the user profile
-        const response = await api.put('/user/profile', updatedData);
-        return response.data;
+        const response = await axiosClient.put('/user/update', updatedData);
+        return response.data.user;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data?.message || "Failed to update profile");
     }
 });
+
+export const changePassword = createAsyncThunk(
+    "auth/changePassword",
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/changepassword", data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+);
 
 export const googleLogin = createAsyncThunk(
     "auth/googleLogin",
@@ -85,6 +96,31 @@ export const createAdmin = createAsyncThunk(
             return res.data;
         } catch (err) {
             return rejectWithValue(err.response.data.message);
+        }
+    }
+);
+
+
+export const sendOtp = createAsyncThunk(
+    "auth/sendOtp",
+    async (_, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/send-otp");
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+);
+
+export const verifyEmail = createAsyncThunk(
+    "auth/verifyEmail",
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axiosClient.post("/user/verify-email", data);
+            return res.data;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
         }
     }
 );
@@ -215,6 +251,13 @@ const authSlice = createSlice({
             .addCase(createAdmin.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || "Failed to create admin";
+            })
+
+            // verify email
+            .addCase(verifyEmail.fulfilled, (state) => {
+                if (state.user) {
+                    state.user.isEmailVerified = true;
+                }
             })
 
             // manage users cases
