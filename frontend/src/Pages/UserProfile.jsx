@@ -92,14 +92,23 @@ function UserProfile() {
 
   const handleSendOtp = async () => {
     setOtpLoading(true);
-    const res = await dispatch(sendOtp());
-    setOtpLoading(false);
+    try {
+      console.log("Dispatching sendOtp...");
+      const res = await dispatch(sendOtp());
+      console.log("sendOtp result:", res);
 
-    if (sendOtp.fulfilled.match(res)) {
-      setShowOtpInput(true);
-      toast.success("OTP sent to your email!");
-    } else {
-      toast.error(res.payload || "Failed to send OTP");
+      if (sendOtp.fulfilled.match(res)) {
+        setShowOtpInput(true);
+        toast.success("OTP sent to your email!");
+      } else {
+        console.error("sendOtp failed:", res.payload);
+        toast.error(res.payload || "Failed to send OTP");
+      }
+    } catch (error) {
+      console.error("handleSendOtp Error:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setOtpLoading(false);
     }
   }
 

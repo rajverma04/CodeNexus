@@ -12,11 +12,14 @@ if (!emailUser || !emailPass) {
 }
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: emailUser,
-    pass: emailPass
-  }
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  },
+  connectionTimeout: 10000
 });
 
 const sendEmail = async ({ to, subject, html }) => {
