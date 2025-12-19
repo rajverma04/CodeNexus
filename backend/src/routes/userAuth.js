@@ -1,11 +1,14 @@
 const express = require("express");
 const authRouter = express.Router();
-const { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts } = require("../controllers/userAuthenticate");
+const { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts, sendVerificationOtp } = require("../controllers/userAuthenticate");
 const userMiddleware = require("../middleware/userMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
 
 // register
 authRouter.post("/register", register);     // second parameter is controller(or can say function)
+
+// send otp
+authRouter.post("/send-otp", userMiddleware, sendVerificationOtp);
 
 // verify email
 authRouter.post("/verify-email", verifyEmail);
@@ -39,9 +42,14 @@ authRouter.get("/getAllUsers", adminMiddleware, manageAccounts);
 authRouter.get("/check", userMiddleware, (req, res) => {
     const reply = {
         firstName: req.result.firstName,
+        lastName: req.result.lastName,
         emailId: req.result.emailId,
+        age: req.result.age,
         _id: req.result._id,
-        role: req.result.role
+        role: req.result.role,
+        problemSolved: req.result.problemSolved,
+        isEmailVerified: req.result.isEmailVerified,
+        hasPassword: !!req.result.password
     }
 
     res.status(200).json({

@@ -5,6 +5,8 @@ const validate = require("../utils/validator")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
 const verifyToken = require("./googleAuthenticate");
+const generateOTP = require("../utils/generateOTP");
+const sendEmail = require("../utils/sendEmail");
 
 
 
@@ -62,9 +64,14 @@ const login = async (req, res) => {
 
         const reply = {     // only these data will be sent to frontend
             firstName: user.firstName,
+            lastName: user.lastName,
             emailId: user.emailId,
+            age: user.age,
             _id: user._id,
-            role: user.role
+            role: user.role,
+            problemSolved: user.problemSolved,
+            isEmailVerified: user.isEmailVerified,
+            hasPassword: !!user.password
         }
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
         res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });
@@ -74,7 +81,6 @@ const login = async (req, res) => {
             user: reply,
             message: "Login Successfully"
         });
-
     } catch (err) {
         res.status(401).send("Error: " + err);      // 401: unauthrised access
     }
@@ -182,7 +188,7 @@ const updateProfile = async (req, res) => {
                 new: true,        // return updated document
                 runValidators: true
             }
-        ).select("firstName lastName emailId age role _id");
+        ).select("firstName lastName emailId age role _id problemSolved");
 
         res.status(200).json({
             user: updatedUser,
@@ -203,29 +209,35 @@ const changePassword = async (req, res) => {
         const userId = req.result._id;
 
         const { oldPassword, newPassword } = req.body;
-        console.log("Old: ", oldPassword)
-        console.log("new: ", newPassword)
-        if (!oldPassword || !newPassword) {
+        // console.log("Old: ", oldPassword)
+        // console.log("new: ", newPassword)
+
+        if (!newPassword) {
             return res.status(400).json({
-                message: "Old password and new password is required",
+                message: "New password is required",
             })
         }
 
         const user = await User.findById(userId);
-        console.log(user)
+        // console.log(user)
         if (!user) {
             return res.status(401).json({
                 message: "User not found"
             })
         }
 
-        // verify old password
-        const isMatch = await bcrypt.compare(oldPassword, user.password);
-        console.log(isMatch)
-        if (!isMatch) {
-            return res.status(401).json({
-                message: "Old password is incorrect"
-            })
+        // Check if user has a password set
+        if (user.password) {
+            if (!oldPassword) {
+                return res.status(400).json({ message: "Old password is required" });
+            }
+
+            const isMatch = await bcrypt.compare(oldPassword, user.password);
+            if (!isMatch) {
+                return res.status(401).json({
+                    message: "Old password is incorrect"
+                })
+            }
         }
 
         // store new password
@@ -235,7 +247,7 @@ const changePassword = async (req, res) => {
         await user.save();
 
         res.status(200).json({
-            message: "Password Updated Successfully"
+            message: user.password ? "Password Updated Successfully" : "Password Set Successfully"
         })
 
     } catch (err) {
@@ -264,7 +276,7 @@ const googleSignIn = async (req, res) => {
         const firstName = payload.name;
 
         // check if user exists
-        console.log("Checking user...");
+        // console.log("Checking user...");
         let user = await User.findOne({ emailId: email });
         // console.log("User found?", !!user);
 
@@ -294,8 +306,13 @@ const googleSignIn = async (req, res) => {
             user: {
                 _id: user._id,
                 firstName: user.firstName,
+                lastName: user.lastName,
                 emailId: user.emailId,
+                age: user.age,
                 role: user.role,
+                problemSolved: user.problemSolved,
+                isEmailVerified: user.isEmailVerified,
+                hasPassword: !!user.password
             },
         });
 
@@ -352,6 +369,48 @@ const verifyEmail = async (req, res) => {
 }
 
 
+const sendVerificationOtp = async (req, res) => {
+    try {
+        const userId = req.result._id;
+        const user = await User.findById(userId);
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+        if (user.isEmailVerified) return res.status(400).json({ message: "Email already verified" });
+
+        const otp = generateOTP();
+        // console.log("OTP: ", otp);
+
+        user.emailVerificationToken = otp;
+        user.emailVerificationExpireAt = Date.now() + 10 * 60 * 1000; // 10 mins
+
+        await user.save();
+
+        await sendEmail({
+            to: user.emailId,
+            subject: "Verify your email - CodeNexus",
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; max-width: 500px;">
+                    <h2 style="color: #10b981; text-align: center;">CodeNexus</h2>
+                    <p style="font-size: 16px; color: #333;">Hello,</p>
+                    <p style="font-size: 16px; color: #333;">Your verification code for <strong>CodeNexus</strong> is:</p>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <span style="font-size: 24px; font-weight: bold; color: #000; letter-spacing: 5px;">${otp}</span>
+                    </div>
+                    <p style="font-size: 14px; color: #666;">This code will expire in <strong>10 minutes</strong>.</p>
+                    <p style="font-size: 14px; color: #999; margin-top: 30px;">If you didn't request this, please ignore this email.</p>
+                </div>
+            `
+        });
+
+        res.status(200).json({ message: "OTP sent to your email" });
+
+    } catch (err) {
+        console.error("Send OTP Error", err);
+        res.status(500).json({ message: "Failed to send OTP", error: err.message });
+    }
+}
+
+
 const manageAccounts = async (req, res) => {
     try {
         // console.log("manageAccounts controller reached");
@@ -382,4 +441,4 @@ const manageAccounts = async (req, res) => {
     }
 }
 
-module.exports = { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts }
+module.exports = { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts, sendVerificationOtp }

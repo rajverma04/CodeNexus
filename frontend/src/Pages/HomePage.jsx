@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../authSlice";
 import axiosClient from "../utils/axiosClient";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 
 function HomePage() {
@@ -14,6 +14,7 @@ function HomePage() {
     tags: "all",
     status: "all",
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProblems = async () => {
@@ -100,6 +101,7 @@ function HomePage() {
               <ul className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-40">
                 <li>
                   <button onClick={handleLogout}>Logout</button>
+                  <button onClick={() => navigate("/profile")}>Profile</button>
                 </li>
               </ul>
             </div>
@@ -174,13 +176,12 @@ function HomePage() {
                       <div className="flex justify-between gap-2 items-start">
                         <h2 className="card-title text-lg">{problem.title}</h2>
                         <span
-                          className={`badge ${
-                            problem.difficulty === "easy"
-                              ? "badge-success"
-                              : problem.difficulty === "medium"
+                          className={`badge ${problem.difficulty === "easy"
+                            ? "badge-success"
+                            : problem.difficulty === "medium"
                               ? "badge-warning"
                               : "badge-error"
-                          }`}
+                            }`}
                         >
                           {problem.difficulty}
                         </span>
@@ -204,9 +205,8 @@ function HomePage() {
                       {/* Status + Action */}
                       <div className="mt-4 flex items-center justify-between">
                         <span
-                          className={`badge ${
-                            isSolved ? "badge-success" : "badge-ghost"
-                          }`}
+                          className={`badge ${isSolved ? "badge-success" : "badge-ghost"
+                            }`}
                         >
                           {isSolved ? "Solved" : "Unsolved"}
                         </span>
