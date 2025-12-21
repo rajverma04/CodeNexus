@@ -22,9 +22,9 @@ const LandingPage = () => {
         <div className="min-h-screen bg-black text-white overflow-hidden relative selection:bg-emerald-500/30">
             {/* Background Gradients */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[120px]" />
-                <div className="absolute top-[40%] left-[30%] w-[30%] h-[30%] bg-purple-500/5 rounded-full blur-[100px]" />
+                <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] md:w-[60%] md:h-[60%] bg-emerald-500/10 rounded-full blur-[80px] md:blur-[120px]" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] md:w-[60%] md:h-[60%] bg-blue-500/10 rounded-full blur-[80px] md:blur-[120px]" />
+                <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] md:w-[30%] md:h-[30%] bg-purple-500/5 rounded-full blur-[60px] md:blur-[100px]" />
             </div>
 
             {/* Main Content */}
@@ -178,25 +178,25 @@ const LandingPage = () => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center divide-x divide-white/5">
                         <div>
                             <div className="text-4xl font-bold text-white mb-2">100+</div>
-                            <div className="text-zinc-500 text-sm uppercase tracking-wider">
+                            <div className="text-zinc-400 text-sm uppercase tracking-wider">
                                 Problems
                             </div>
                         </div>
                         <div>
                             <div className="text-4xl font-bold text-white mb-2">3</div>
-                            <div className="text-zinc-500 text-sm uppercase tracking-wider">
+                            <div className="text-zinc-400 text-sm uppercase tracking-wider">
                                 Languages
                             </div>
                         </div>
                         <div>
                             <div className="text-4xl font-bold text-white mb-2">24/7</div>
-                            <div className="text-zinc-500 text-sm uppercase tracking-wider">
+                            <div className="text-zinc-400 text-sm uppercase tracking-wider">
                                 AI Support
                             </div>
                         </div>
                         <div>
                             <div className="text-4xl font-bold text-white mb-2">100%</div>
-                            <div className="text-zinc-500 text-sm uppercase tracking-wider">
+                            <div className="text-zinc-400 text-sm uppercase tracking-wider">
                                 Free
                             </div>
                         </div>
@@ -216,18 +216,21 @@ const LandingPage = () => {
                         <div className="flex gap-6">
                             <a
                                 href="#"
+                                aria-label="View Source Code"
                                 className="text-zinc-400 hover:text-white transition-colors"
                             >
                                 <Code className="w-5 h-5" />
                             </a>
                             <a
                                 href="#"
+                                aria-label="Database Schema"
                                 className="text-zinc-400 hover:text-white transition-colors"
                             >
                                 <Database className="w-5 h-5" />
                             </a>
                             <a
                                 href="#"
+                                aria-label="System Architecture"
                                 className="text-zinc-400 hover:text-white transition-colors"
                             >
                                 <Cpu className="w-5 h-5" />
