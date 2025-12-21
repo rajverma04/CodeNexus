@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Problem = require("../models/problems");
 const Submission = require("../models/submission");
 const User = require("../models/user");
@@ -203,4 +204,43 @@ const submittedProblem = async (req, res) => {
     }
 }
 
-module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem };
+const getUserSubmissionStats = async (req, res) => {
+    try {
+        const userId = req.result._id;
+
+        const stats = await Submission.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                    status: "accepted"
+                }
+            },
+            {
+                $project: {
+                    date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+                }
+            },
+            {
+                $group: {
+                    _id: "$date",
+                    count: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+
+        // Transform to { date, count } format
+        const formattedStats = stats.map(item => ({
+            date: item._id,
+            count: item.count
+        }));
+
+        res.status(200).send(formattedStats);
+    } catch (err) {
+        res.status(500).send("Error: " + err);
+    }
+}
+
+module.exports = { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem, getUserSubmissionStats };

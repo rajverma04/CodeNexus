@@ -31,7 +31,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// import ActivityHeatmap from "../Components/ActivityHeatmap";
+import ActivityHeatmap from "../Components/ActivityHeatmap";
 
 // Password Validation Schema Helper
 const getPasswordSchema = (hasPassword) => {
@@ -403,6 +403,7 @@ function UserProfile() {
                 <p className="text-3xl font-bold text-emerald-400">Active</p>
               </div>
             </div>
+
           </div>
 
           {/* Sidebar Actions */}
@@ -435,12 +436,27 @@ function UserProfile() {
               </h3>
               <button
                 onClick={handleLogout}
-                className="cursor-pointer w-full py-3 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-600 hover:text-white text-rose-400 transition-all font-bold text-sm flex items-center justify-center gap-2"
+                className="cursor-pointer w-full py-3 px-4 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500 hover:text-white text-rose-400 transition-all text-sm font-bold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-rose-500/20 group"
               >
-                <LogOut className="w-4 h-4" /> Sign Out
+                <LogOut className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+                <span>Sign Out</span>
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Activity Heatmap - Full Width */}
+        <div className="rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl p-8 shadow-2xl">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Coding Activity</h3>
+              <p className="text-zinc-400 text-sm">Your submission history over the last year</p>
+            </div>
+          </div>
+          <ActivityHeatmap />
         </div>
       </div>
 
