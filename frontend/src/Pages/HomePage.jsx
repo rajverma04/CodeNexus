@@ -1,26 +1,28 @@
 import { useDispatch, useSelector } from "react-redux";
-import { logoutUser } from "../authSlice";
 import axiosClient from "../utils/axiosClient";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink } from "react-router";
 import { useEffect, useState } from "react";
+import { Search, Sparkles, CheckCircle2, Code2, ArrowRight } from "lucide-react";
 
 function HomePage() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const [problems, setProblems] = useState([]);
   const [solvedProblems, setSolvedProblems] = useState([]);
+
+  // Custom Filter State
   const [filters, setFilters] = useState({
     difficulty: "all",
     tags: "all",
     status: "all",
+    search: ""
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProblems = async () => {
       try {
         const { data } = await axiosClient.get("/problem/getAllProblems");
-        setProblems(data);
+        setProblems(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching problems: ", error);
       }
@@ -29,7 +31,7 @@ function HomePage() {
     const fetchSolvedProblems = async () => {
       try {
         const { data } = await axiosClient.get("/problem/problemSolvedByUser");
-        setSolvedProblems(data);
+        setSolvedProblems(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching solved problems: ", error);
       }
@@ -37,15 +39,9 @@ function HomePage() {
 
     fetchProblems();
     if (user) {
-      // if user exist then call fetchSolvedProblems()
       fetchSolvedProblems();
     }
-  }, [user]); // if user changed: means another user logged in
-
-  const handleLogout = () => {
-    dispatch(logoutUser());
-    setSolvedProblems([]); // clear solved problem on logout
-  };
+  }, [user]);
 
   const filteredProblems = problems.filter((problem) => {
     const difficultyMatch =
@@ -53,181 +49,194 @@ function HomePage() {
     const tagMatch = filters.tags === "all" || problem.tags === filters.tags;
     const statusMatch =
       filters.status === "all" ||
-      solvedProblems.some((sp) => sp._id === problem._id);
+      (filters.status === "solved" ? solvedProblems.some((sp) => sp._id === problem._id) : !solvedProblems.some((sp) => sp._id === problem._id));
 
-    return difficultyMatch && tagMatch && statusMatch;
+    // Search match
+    const searchLower = filters.search.toLowerCase();
+    const searchMatch = !filters.search ||
+      problem.title.toLowerCase().includes(searchLower) ||
+      (problem.tags && problem.tags.toLowerCase().includes(searchLower));
+
+    return difficultyMatch && tagMatch && statusMatch && searchMatch;
   });
 
   return (
-    <>
-      <div className="min-h-screen bg-base-200">
-        {/* Navigation Bar */}
-        <nav className="navbar bg-base-100 shadow-lg px-4">
-          <div className="flex-1">
-            <NavLink to="/" className="btn btn-ghost text-xl">
-              CodeNexus
-            </NavLink>
+    <div className="min-h-screen bg-black text-white p-6 relative overflow-hidden selection:bg-emerald-500/30">
+      {/* Background Gradients */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[120px] animate-pulse" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10 space-y-8 pb-12">
+
+        {/* Hero Section */}
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-white/10 pb-8 mt-4">
+          <div className="space-y-2">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent flex items-center gap-3">
+              Problem Set <Sparkles className="w-8 h-8 text-emerald-400 animate-pulse" />
+            </h1>
+            <p className="text-zinc-400 text-lg max-w-2xl">
+              Sharpen your skills with our curated list of algorithmic challenges.
+            </p>
           </div>
 
-          {/* If role === admin then this URL will shows */}
-          {user?.role === "admin" && (
-            <div className="flex-1">
-              <NavLink to="/admin" className="btn btn-ghost text-xl">
-                Admin Panel
-              </NavLink>
+          {/* Stats Summary */}
+          <div className="flex gap-4">
+            <div className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm text-center">
+              <p className="text-zinc-500 text-xs uppercase font-bold tracking-wider">Total</p>
+              <p className="text-2xl font-bold text-white">{problems.length}</p>
             </div>
-          )}
-          <div className="flex-none gap-4">
             {user && (
-              <span className="hidden sm:inline text-sm">
-                Welcome,&nbsp;
-                <span className="font-semibold">
-                  {user.firstName || user.name || "User"}
-                </span>
-              </span>
-            )}
-
-            <div className="dropdown dropdown-end">
-              <div
-                tabIndex={0}
-                className="btn btn-ghost btn-circle avatar placeholder"
-              >
-                <div className="bg-neutral text-neutral-content rounded-full w-10">
-                  <span className="text-sm">
-                    {user?.firstName?.[0]?.toUpperCase() || "U"}
-                  </span>
-                </div>
+              <div className="px-5 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-sm text-center">
+                <p className="text-emerald-500/70 text-xs uppercase font-bold tracking-wider">Solved</p>
+                <p className="text-2xl font-bold text-emerald-400">{solvedProblems.length}</p>
               </div>
-              <ul className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-40">
-                <li>
-                  <button onClick={handleLogout}>Logout</button>
-                  <button onClick={() => navigate("/profile")}>Profile</button>
-                </li>
-              </ul>
-            </div>
+            )}
           </div>
-        </nav>
+        </div>
 
-        {/* Main Content */}
-        <div className="container mx-auto p-4">
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 mb-6 items-center">
-            {/* Status filter */}
+        {/* Filters & Search Bar */}
+        <div className="sticky top-4 z-40 bg-black/80 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl flex flex-col lg:flex-row gap-4 justify-between items-center transition-all">
+          {/* Search */}
+          <div className="relative w-full lg:w-96 group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-500 group-focus-within:text-emerald-400 transition-colors">
+              <Search className="w-5 h-5" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search problems, tags..."
+              className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:bg-white/10 transition-all font-medium"
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            />
+          </div>
+
+          {/* Dropdowns */}
+          <div className="flex flex-wrap gap-3 w-full lg:w-auto justify-end">
+            {/* Status Filter */}
             <select
-              className="select select-bordered"
+              className="bg-white/5 border border-white/10 text-zinc-300 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none hover:bg-white/10 transition-colors cursor-pointer"
               value={filters.status}
-              onChange={(e) =>
-                setFilters({ ...filters, status: e.target.value })
-              }
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
-              <option value="all">All Problems</option>
-              <option value="solved">Solved Problems</option>
+              <option value="all">All Status</option>
+              <option value="solved">Solved</option>
+              <option value="unsolved">Unsolved</option>
             </select>
 
-            {/* Difficulty filter */}
+            {/* Difficulty Filter */}
             <select
-              className="select select-bordered"
+              className="bg-white/5 border border-white/10 text-zinc-300 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none hover:bg-white/10 transition-colors cursor-pointer"
               value={filters.difficulty}
-              onChange={(e) =>
-                setFilters({ ...filters, difficulty: e.target.value })
-              }
+              onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
             >
-              <option value="all">All Difficulty</option>
+              <option value="all">All Difficulties</option>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
-              <option value="Hard">Hard</option>
+              <option value="hard">Hard</option>
             </select>
 
-            {/* Tags filter */}
+            {/* Tags Filter */}
             <select
-              className="select select-bordered"
+              className="bg-white/5 border border-white/10 text-zinc-300 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5 outline-none hover:bg-white/10 transition-colors cursor-pointer capitalize"
               value={filters.tags}
               onChange={(e) => setFilters({ ...filters, tags: e.target.value })}
             >
               <option value="all">All Tags</option>
-              <option value="array">Arrays</option>
+              <option value="array">Array</option>
               <option value="linkedList">Linked List</option>
               <option value="graph">Graph</option>
               <option value="dp">Dynamic Programming</option>
             </select>
-          </div>
 
-          {/* Problems List */}
-          <div className="grid gap-4">
-            {filteredProblems.length === 0 ? (
-              <div className="card bg-base-100 shadow-md">
-                <div className="card-body">
-                  <h2 className="card-title text-lg">No problems found</h2>
-                  <p className="text-sm text-base-content/70">
-                    Try changing the filters or check back later.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              filteredProblems.map((problem) => {
-                const isSolved = solvedProblems.some(
-                  (sp) => sp._id === problem._id
-                );
-
-                return (
-                  <div key={problem._id} className="card bg-base-100 shadow-xl">
-                    <div className="card-body">
-                      {/* Title + Difficulty */}
-                      <div className="flex justify-between gap-2 items-start">
-                        <h2 className="card-title text-lg">{problem.title}</h2>
-                        <span
-                          className={`badge ${problem.difficulty === "easy"
-                            ? "badge-success"
-                            : problem.difficulty === "medium"
-                              ? "badge-warning"
-                              : "badge-error"
-                            }`}
-                        >
-                          {problem.difficulty}
-                        </span>
-                      </div>
-
-                      {/* Tags */}
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {Array.isArray(problem.tags) ? (
-                          problem.tags.map((tag) => (
-                            <span key={tag} className="badge badge-outline">
-                              {tag}
-                            </span>
-                          ))
-                        ) : problem.tags ? (
-                          <span className="badge badge-outline">
-                            {problem.tags}
-                          </span>
-                        ) : null}
-                      </div>
-
-                      {/* Status + Action */}
-                      <div className="mt-4 flex items-center justify-between">
-                        <span
-                          className={`badge ${isSolved ? "badge-success" : "badge-ghost"
-                            }`}
-                        >
-                          {isSolved ? "Solved" : "Unsolved"}
-                        </span>
-
-                        {/* Adjust the route below as per your app */}
-                        <NavLink
-                          to={`/problems/${problem._id}`}
-                          className="btn btn-sm btn-neutral"
-                        >
-                          Solve
-                        </NavLink>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+            {/* Reset Filters */}
+            {(filters.difficulty !== "all" || filters.tags !== "all" || filters.status !== "all" || filters.search) && (
+              <button
+                onClick={() => setFilters({ difficulty: "all", tags: "all", status: "all", search: "" })}
+                className="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 rounded-xl text-sm font-medium transition-all"
+              >
+                Reset
+              </button>
             )}
           </div>
         </div>
+
+        {/* Problems List (Horizontal Cards) */}
+        <div className="space-y-4">
+          {filteredProblems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white/5 border border-white/10 rounded-3xl text-center">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-6">
+                <Search className="w-10 h-10 text-zinc-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">No problems found</h2>
+              <p className="text-zinc-500 max-w-sm">
+                We couldn't find any problems matching your current filters. Try adjusting them.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {filteredProblems.map((problem) => {
+                const isSolved = solvedProblems.some((sp) => sp._id === problem._id);
+
+                return (
+                  <NavLink
+                    key={problem._id}
+                    to={`/problems/${problem._id}`}
+                    className="group relative bg-[#1c1c1c]/50 hover:bg-white/[0.07] border border-white/10 rounded-xl p-4 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 overflow-hidden"
+                  >
+                    {/* Hover Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      {/* Icon */}
+                      <div className={`p-2.5 rounded-lg shrink-0 ${isSolved ? 'bg-emerald-500/10 text-emerald-400' : 'bg-white/5 text-zinc-500 group-hover:text-zinc-300'} transition-colors`}>
+                        {isSolved ? <CheckCircle2 className="w-5 h-5" /> : <Code2 className="w-5 h-5" />}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex flex-col gap-1.5 min-w-0">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors truncate">
+                            {problem.title}
+                          </h3>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border shrink-0
+                                                ${problem.difficulty === "easy"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              : problem.difficulty === "medium"
+                                ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                            }`}>
+                            {problem.difficulty}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          {problem.tags && (
+                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5">
+                              {problem.tags}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action */}
+                    <div className="hidden md:flex items-center gap-2 pr-2 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                      <span className="text-sm font-medium text-emerald-400">Solve Challenge</span>
+                      <ArrowRight className="w-4 h-4 text-emerald-400" />
+                    </div>
+
+                    {/* Mobile indicator */}
+                    <ArrowRight className="w-4 h-4 text-zinc-600 md:hidden absolute right-4 top-1/2 -translate-y-1/2" />
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 

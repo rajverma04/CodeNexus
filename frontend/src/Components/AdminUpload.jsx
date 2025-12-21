@@ -1,234 +1,16 @@
-// import { useParams } from "react-router";
-// import { useForm } from "react-hook-form";
-// import axios from "axios";
-// import { useState } from "react";
-// import axiosClient from "../utils/axiosClient";
-
-// function AdminUpload() {
-//   let { problemId } = useParams();
-//   const [uploading, setUploading] = useState(false);
-//   const [uploadProgress, setUploadProgress] = useState(0);
-//   const [uploadedVideo, setUploadedVideo] = useState(null);
-
-//   const {
-//     register,
-//     handleSubmit,
-//     watch,
-//     formState: { error },
-//     reset,
-//     setError,
-//     clearErrors,
-//   } = useForm();
-
-//   const selectedFile = watch("videoFile")?.[0];
-
-//   // Upload video to cloudinary
-//   const onSubmit = async (data) => {
-//     const file = data.videoFile[0];
-
-//     setUploading(true);
-//     setUploadProgress(0);
-//     clearErrors();
-
-//     try {
-//       const signatureResponse = await axiosClient.get(
-//         `/video/create/${problemId}`
-//       );
-//       const {
-//         signature,
-//         timestamp,
-//         public_id,
-//         api_key,
-//         cloud_name,
-//         upload_url,
-//       } = signatureResponse.data;
-
-//       // Create form data for cloudinary
-//       const formData = new FormData();
-//       formData.append("file", file);
-//       formData.append("signature", signature);
-//       formData.append("timestamp", timestamp);
-//       formData.append("public_id", public_id);
-//       formData.append("api_key", api_key);
-
-//       // upload directly to cloudinary
-//       const uploadResponse = await axios.post(upload_url, formData, {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//         },
-//         onUploadProgress: (progressEvent) => {
-//           const progress = Math.round(
-//             (progressEvent.loaded * 100) / progressEvent.total
-//           );
-//           setUploadProgress(progress);
-//         },
-//       });
-
-//       const cloudinaryResult = uploadResponse.data;
-
-//       // Save video metadata to backend
-//       const metadataResponse = await axiosClient.post("/video/save", {
-//         problemId: problemId,
-//         cloudinaryPublicId: cloudinaryResult.public_id,
-//         secureURL: cloudinaryResult.secure_url,
-//         duration: cloudinaryResult.duration,
-//       });
-
-//       setUploadedVideo(metadataResponse.data.videoSolution);
-//       reset();
-//     } catch (err) {
-//       console.log("Upload Error: ", err);
-//       setError("root", {
-//         type: "manual",
-//         message:
-//           err?.response?.data?.message || "Upload failed. Please try again.",
-//       });
-//     } finally {
-//       setUploading(false);
-//       setUploadProgress(0);
-//     }
-//   };
-
-//   // format file size
-//   const formatFileSize = (bytes) => {
-//     if (bytes === 0) {
-//       return "0 Bytes";
-//     }
-//     const k = 1024;
-//     const size = ["Bytes", "KB", "MB", "GB"];
-//     const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-//     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + size[i];
-//   };
-
-//   // format duration
-//   const formatDuration = (seconds) => {
-//     const mins = Math.floor(seconds / 60);
-//     const secs = Math.floor(seconds % 60);
-
-//     return `${mins}:${secs.toString().padStart(2, "0")}`;
-//   };
-
-//   return (
-//     <>
-//       <div>
-//         <h1>Upload Video</h1>
-
-//         <form onSubmit={handleSubmit(onSubmit)}>
-//             <label htmlFor=""><span>Choose Video File</span></label>
-
-//             <input type="file" accept="video/*"
-//             {...register("videoFile", {
-//                 required: "Please select the video",
-//                 validate: {
-//                     isVideo: (files) => {
-//                         if(!files || !files[0]) {
-//                             return "Please select a video file";
-//                         }
-
-//                         const file = files[0];
-//                         return file.type.startsWith("video/") || "Please select a valid video file";
-//                     },
-//                     fileSize: (files) => {
-//                         if(!files || !files[0]) {
-//                             return true;
-//                         }
-//                         const file = files[0];
-//                         const maxSize = 100 * 1024 * 1024;      // 100mb
-//                         return file.size <= maxSize || "File size must be less than 100mb";
-//                     }
-//                 }
-//             })}
-
-//             className={`file-input file-input-bordered ${error.videoFile ? 'file-input-error': }`}
-//             disabled={uploading}
-//             />
-
-//             {
-//                 error.videoFile && (
-//                     <label>
-//                         <span>{error.videoFile.message}</span>
-//                     </label>
-//                 )
-//             }
-
-//             {/* Selected file info */}
-//             {
-//                 selectedFile && (
-//                     <div>
-//                         <h3>Selected File:</h3>
-//                         <p>{selectedFile.name}</p>
-//                         <p>Size: {formatFileSize(selectedFile.size)}</p>
-//                     </div>
-
-//                 )
-//             }
-
-//             {/* upload progress */}
-//             {
-//                 uploading && (
-//                     <div>
-//                         <span>Uploading...</span>
-//                         <span>{uploadProgress}%</span>
-//                     </div>
-//                 )
-//             }
-
-//             {/* Error message */}
-//             {
-//                 error.root && (
-//                     <span>{error.root.message}</span>
-//                 )
-//             }
-
-//             {/* Success message */}
-//             {
-//                 uploadedVideo && (
-//                     <div>
-//                         <h3>Upload successful</h3>
-//                         <p>Duration: {formatDuration(uploadedVideo.duration)}</p>
-//                         <p>Uploaded: {new Date(uploadedVideo.uploadAt).toLocaleString()}</p>
-//                     </div>
-//                 )
-//             }
-
-//             {/* upload button */}
-//             <div>
-//                 <button type="submit" disabled={uploading}
-//                     className={`${uploading ? "loading" : ""}`}
-//                 >
-//                     {uploading ? "Uploading..." : "Upload Video"}
-//                 </button>
-//             </div>
-
-//             {/* Uploaded video preview */}
-//             {uploadedVideo && uploadedVideo.thubmnailUrl && (
-//                 <div>
-//                     <h3>Video Thumbnail:</h3>
-//                     <img src={uploadedVideo.thubmnailUrl} alt="video thubmnail" />
-//                 </div>
-//             )}
-//         </form>
-//       </div>
-//     </>
-//   );
-// }
-
-// export default AdminUpload;
-
-// todo: above coderarmy code
-
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useState } from "react";
 import axiosClient from "../utils/axiosClient";
+import { ArrowLeft, UploadCloud, FileVideo, CheckCircle2, AlertTriangle, X, PlayCircle } from "lucide-react";
 
 function AdminUpload() {
   let { problemId } = useParams();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedVideo, setUploadedVideo] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
 
   const {
     register,
@@ -238,9 +20,29 @@ function AdminUpload() {
     reset,
     setError,
     clearErrors,
+    setValue
   } = useForm();
 
   const selectedFile = watch("videoFile")?.[0];
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setValue("videoFile", e.dataTransfer.files);
+    }
+  };
 
   const onSubmit = async (data) => {
     const file = data.videoFile[0];
@@ -259,12 +61,8 @@ function AdminUpload() {
         timestamp,
         public_id,
         api_key,
-        cloud_name,
         upload_url,
       } = signatureResponse.data;
-
-      console.log("Signature:", signatureResponse.data.signature);
-      console.log("Timestamp:", signatureResponse.data.timestamp);
 
       const formData = new FormData();
       formData.append("signature", signature);
@@ -312,211 +110,202 @@ function AdminUpload() {
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) {
-      return "0 Bytes";
-    }
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
     const size = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + size[i];
   };
 
   const formatDuration = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-extrabold text-center text-slate-100 mb-8">
-          Upload Video
-        </h1>
+    <div className="min-h-screen bg-black text-white p-6 relative overflow-hidden selection:bg-emerald-500/30">
+      {/* Background Gradients */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[120px]" />
+      </div>
 
-        <div className="bg-white/95 dark:bg-slate-800 rounded-xl shadow-xl p-6">
+      <div className="max-w-2xl mx-auto relative z-10">
+
+        <div className="flex items-center mb-8">
+          <Link
+            to="/admin/video"
+            className="mr-6 p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white transition-all group"
+          >
+            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">Upload Solution</h1>
+            <p className="text-zinc-400 text-sm mt-1">Upload a video explanation for this problem</p>
+          </div>
+        </div>
+
+        <div className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 p-6 shadow-2xl">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* File input - custom styled */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-                Choose Video File
-              </label>
 
-              <div className="flex gap-3 items-center">
-                {/* Hidden native input */}
+            {/* File Drop Zone */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-zinc-300">Video File</label>
+              <div
+                className={`relative w-full h-64 rounded-xl border-2 border-dashed transition-all flex flex-col items-center justify-center text-center cursor-pointer overflow-hidden
+                    ${dragActive ? 'border-emerald-500 bg-emerald-500/10' : 'border-white/10 bg-black/20 hover:bg-black/40 hover:border-white/20'}
+                    ${errors.videoFile ? 'border-rose-500/50 bg-rose-500/5' : ''}
+                    `}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
                 <input
                   id="videoFile"
                   type="file"
                   accept="video/*"
                   {...register("videoFile", {
-                    required: "Please select the video",
+                    required: "Please select a video file",
+                    onChange: (e) => {
+                      if (e.target.files.length > 0) clearErrors("videoFile");
+                    },
                     validate: {
                       isVideo: (files) => {
-                        if (!files || !files[0]) {
-                          return "Please select a video file";
-                        }
-                        const file = files[0];
-                        return (
-                          file.type.startsWith("video/") ||
-                          "Please select a valid video file"
-                        );
+                        if (!files || !files[0]) return "Please select a video file";
+                        return files[0].type.startsWith("video/") || "Invalid file type. Please upload a video.";
                       },
                       fileSize: (files) => {
                         if (!files || !files[0]) return true;
-                        const file = files[0];
                         const maxSize = 100 * 1024 * 1024; // 100MB
-                        return (
-                          file.size <= maxSize ||
-                          "File size must be less than 100mb"
-                        );
+                        return files[0].size <= maxSize || "File size exceeds 100MB limit";
                       },
                     },
                   })}
-                  className="hidden"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-50"
                   disabled={uploading}
+                  title=""
                 />
 
-                {/* Visible custom choose button */}
-                <label
-                  htmlFor="videoFile"
-                  className={`inline-flex items-center gap-3 px-4 py-3 rounded-md cursor-pointer
-                  ${
-                    uploading
-                      ? "opacity-60 pointer-events-none"
-                      : "hover:shadow-lg"
-                  }
-                  bg-neutral-900 text-white`}
-                >
-                  {/* Icon */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                  >
-                    <path
-                      d="M12 3v12"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span className="font-medium">Choose File</span>
-                </label>
-
-                {/* Filename / size */}
-                <div className="flex-1 min-w-0">
-                  {selectedFile ? (
-                    <div className="bg-slate-50 dark:bg-slate-700 border rounded-md px-4 py-3">
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="truncate">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">
-                            {selectedFile.name}
-                          </div>
-                          <div className="text-xs text-slate-500 dark:text-slate-300">
-                            {formatFileSize(selectedFile.size)}
-                          </div>
-                        </div>
-                        <div className="text-xs text-slate-400">Ready</div>
-                      </div>
+                {selectedFile ? (
+                  <div className="z-10 p-6 flex flex-col items-center animate-fade-in">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+                      <FileVideo className="w-8 h-8" />
                     </div>
-                  ) : (
-                    <div className="bg-slate-50 dark:bg-slate-700 border rounded-md px-4 py-3 text-slate-500">
-                      No file chosen
+                    <p className="text-white font-medium truncate max-w-[250px]">{selectedFile.name}</p>
+                    <p className="text-zinc-500 text-sm mt-1">{formatFileSize(selectedFile.size)}</p>
+                    <span className="mt-4 px-3 py-1 rounded-full bg-white/10 text-xs text-zinc-300">
+                      Click or Drag to change
+                    </span>
+                  </div>
+                ) : (
+                  <div className="z-10 p-6 flex flex-col items-center">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-colors ${dragActive ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 text-zinc-400'}`}>
+                      <UploadCloud className="w-8 h-8" />
                     </div>
-                  )}
-                </div>
+                    <p className="text-white font-medium text-lg">
+                      {dragActive ? "Drop video here" : "Drag & Drop video here"}
+                    </p>
+                    <p className="text-zinc-500 text-sm mt-2">
+                      or <span className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2">browse files</span>
+                    </p>
+                    <p className="text-zinc-600 text-xs mt-4">MP4, WebM, Ogg (Max 100MB)</p>
+                  </div>
+                )}
               </div>
-
-              {/* validation error */}
               {errors.videoFile && (
-                <p className="text-sm text-rose-500 mt-2">
-                  {errors.videoFile.message}
+                <p className="text-rose-400 text-sm flex items-center gap-1.5 mt-2">
+                  <AlertTriangle className="w-4 h-4" /> {errors.videoFile.message}
                 </p>
               )}
             </div>
 
             {/* Upload Progress */}
             {uploading && (
-              <div>
-                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-md h-3 overflow-hidden">
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10 animate-fade-in">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-zinc-300">Uploading...</span>
+                  <span className="text-emerald-400 font-mono">{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-black/50 rounded-full h-2 overflow-hidden">
                   <div
-                    className="h-3 bg-indigo-600 dark:bg-indigo-500 transition-all"
+                    className="h-full bg-emerald-500 transition-all duration-300 ease-out relative"
                     style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
-                <p className="text-sm text-center mt-2 text-slate-600 dark:text-slate-300">
-                  Uploading: {uploadProgress}%
-                </p>
-              </div>
-            )}
-
-            {/* Error message */}
-            {errors.root && (
-              <div className="p-3 bg-rose-50 border border-rose-100 rounded-md">
-                <p className="text-sm text-rose-700">{errors.root.message}</p>
-              </div>
-            )}
-
-            {/* Success message */}
-            {uploadedVideo && (
-              <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-md">
-                <h3 className="font-semibold text-emerald-800">
-                  Upload Successful
-                </h3>
-                <div className="mt-1 text-sm text-slate-700">
-                  <p>Duration: {formatDuration(uploadedVideo.duration)}</p>
-                  <p>
-                    Uploaded:{" "}
-                    {new Date(uploadedVideo.uploadedAt).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Submit */}
-            <div>
-              <button
-                type="submit"
-                disabled={uploading}
-                className={`w-full rounded-lg py-3 text-white font-semibold shadow-md
-                ${
-                  uploading
-                    ? "bg-indigo-500/80"
-                    : "bg-indigo-600 hover:bg-indigo-700"
-                }`}
-              >
-                {uploading ? "Uploading..." : "Upload Video"}
-              </button>
-            </div>
-
-            {/* Thumbnail preview (if available) */}
-            {uploadedVideo &&
-              (uploadedVideo.thubmnailURL || uploadedVideo.thumbnailURL) && (
-                <div>
-                  <h4 className="text-sm font-medium text-slate-700 mb-2">
-                    Video Thumbnail
-                  </h4>
-                  <div className="w-full rounded-md overflow-hidden border">
-                    <img
-                      src={
-                        uploadedVideo.thubmnailURL || uploadedVideo.thumbnailURL
-                      }
-                      alt="video thumbnail"
-                      className="w-full h-48 object-cover"
-                    />
+                  >
+                    <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {errors.root && (
+              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-start gap-3 text-rose-400">
+                <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+                <span className="text-sm">{errors.root.message}</span>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {uploadedVideo && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-4">
+                <div className="p-2 bg-emerald-500/20 rounded-full text-emerald-400 shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-white mb-1">Upload Successful!</h3>
+                  <div className="text-zinc-400 text-sm space-y-1">
+                    <p>Duration: <span className="text-zinc-300">{formatDuration(uploadedVideo.duration)}</span></p>
+                    <p>Uploaded: <span className="text-zinc-300">{new Date().toLocaleString()}</span></p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={uploading}
+              className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-[0.98]
+                ${uploading
+                  ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                  : "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30"
+                }`}
+            >
+              {uploading ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-5 h-5" />
+                  Upload Video
+                </>
               )}
+            </button>
+
+            {/* Thumbnail Preview */}
+            {uploadedVideo && (uploadedVideo.thumbnailURL || uploadedVideo.thubmnailURL) && (
+              <div className="mt-8 pt-8 border-t border-white/10 animate-fade-in">
+                <h4 className="text-sm font-medium text-zinc-400 mb-3 flex items-center gap-2">
+                  <PlayCircle className="w-4 h-4" /> Video Preview Thumbnail
+                </h4>
+                <div className="w-full aspect-video rounded-xl overflow-hidden border border-white/10 bg-black/40 relative group">
+                  <img
+                    src={uploadedVideo.thumbnailURL || uploadedVideo.thubmnailURL}
+                    alt="video thumbnail"
+                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 backdrop-blur-sm">
+                    <a href={uploadedVideo.secureURL} target="_blank" rel="noreferrer" className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-medium backdrop-blur-md transition-all">
+                      Open Video
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>
@@ -525,333 +314,3 @@ function AdminUpload() {
 }
 
 export default AdminUpload;
-
-// import { useParams } from "react-router";
-// import { useForm } from "react-hook-form";
-// import axios from "axios";
-// import { useState } from "react";
-// import axiosClient from "../utils/axiosClient";
-
-// function AdminUpload() {
-//   let { problemId } = useParams();
-//   const [uploading, setUploading] = useState(false);
-//   const [uploadProgress, setUploadProgress] = useState(0);
-//   const [uploadedVideo, setUploadedVideo] = useState(null);
-
-//   const {
-//     register,
-//     handleSubmit,
-//     watch,
-//     formState: { errors },
-//     reset,
-//     setError,
-//     clearErrors,
-//   } = useForm();
-
-//   const selectedFile = watch("videoFile")?.[0];
-
-//   const onSubmit = async (data) => {
-//     // SAFETY: avoid crash if no file selected
-//     const file = data.videoFile?.[0];
-//     if (!file) {
-//       setError("root", {
-//         type: "manual",
-//         message: "Please select a video file",
-//       });
-//       return;
-//     }
-
-//     setUploading(true);
-//     setUploadProgress(0);
-//     clearErrors();
-
-//     try {
-//       const signatureResponse = await axiosClient.get(
-//         `/video/create/${problemId}`
-//       );
-
-//       // debug: make sure backend actually returned the signature object
-//       console.log("SIGNATURE RESPONSE:", signatureResponse.data);
-
-//       const {
-//         signature,
-//         timestamp,
-//         public_id,
-//         api_key,
-//         cloud_name,
-//         upload_url,
-//       } = signatureResponse.data || {};
-
-//       if (!signature || !timestamp || !public_id || !api_key || !upload_url) {
-//         throw new Error("Invalid upload credentials received from server.");
-//       }
-
-//       const formData = new FormData();
-//       formData.append("file", file);
-//       formData.append("signature", signature);
-//       formData.append("timestamp", timestamp);
-//       formData.append("public_id", public_id);
-//       formData.append("api_key", api_key);
-
-//       const uploadResponse = await axios.post(upload_url, formData, {
-//         headers: {
-//           "Content-Type": "multipart/form-data",
-//         },
-//         onUploadProgress: (progressEvent) => {
-//           const progress = Math.round(
-//             (progressEvent.loaded * 100) / progressEvent.total
-//           );
-//           setUploadProgress(progress);
-//         },
-//       });
-
-//       const cloudinaryResult = uploadResponse.data || {};
-//       // cloudinary may return duration directly or inside info
-//       const duration =
-//         cloudinaryResult.duration || cloudinaryResult.info?.duration || 0;
-
-//       const metadataResponse = await axiosClient.post("/video/save", {
-//         problemId: problemId,
-//         cloudinaryPublicId: cloudinaryResult.public_id,
-//         secureURL: cloudinaryResult.secure_url,
-//         duration,
-//       });
-
-//       // backend should return saved instance fields under videoSolution
-//       const received = metadataResponse?.data?.videoSolution || null;
-//       setUploadedVideo(received);
-//       reset();
-//     } catch (err) {
-//       console.log("Upload Error: ", err);
-//       setError("root", {
-//         type: "manual",
-//         message:
-//           err?.response?.data?.message ||
-//           err?.message ||
-//           "Upload failed. Please try again.",
-//       });
-//     } finally {
-//       setUploading(false);
-//       setUploadProgress(0);
-//     }
-//   };
-
-//   const formatFileSize = (bytes) => {
-//     if (bytes === 0) {
-//       return "0 Bytes";
-//     }
-//     const k = 1024;
-//     const size = ["Bytes", "KB", "MB", "GB"];
-//     const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-//     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + size[i];
-//   };
-
-//   const formatDuration = (seconds) => {
-//     const mins = Math.floor(seconds / 60);
-//     const secs = Math.floor(seconds % 60);
-
-//     return `${mins}:${secs.toString().padStart(2, "0")}`;
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-slate-900 py-12">
-//       <div className="max-w-3xl mx-auto">
-//         <h1 className="text-4xl font-extrabold text-center text-slate-100 mb-8">
-//           Upload Video
-//         </h1>
-
-//         <div className="bg-white/95 dark:bg-slate-800 rounded-xl shadow-xl p-6">
-//           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-//             {/* File input - custom styled */}
-//             <div>
-//               <label className="block text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
-//                 Choose Video File
-//               </label>
-
-//               <div className="flex gap-3 items-center">
-//                 {/* Hidden native input */}
-//                 <input
-//                   id="videoFile"
-//                   type="file"
-//                   accept="video/*"
-//                   {...register("videoFile", {
-//                     required: "Please select the video",
-//                     validate: {
-//                       isVideo: (files) => {
-//                         if (!files || !files[0]) {
-//                           return "Please select a video file";
-//                         }
-//                         const file = files[0];
-//                         return (
-//                           file.type.startsWith("video/") ||
-//                           "Please select a valid video file"
-//                         );
-//                       },
-//                       fileSize: (files) => {
-//                         if (!files || !files[0]) return true;
-//                         const file = files[0];
-//                         const maxSize = 100 * 1024 * 1024; // 100MB
-//                         return (
-//                           file.size <= maxSize ||
-//                           "File size must be less than 100mb"
-//                         );
-//                       },
-//                     },
-//                   })}
-//                   className="hidden"
-//                   disabled={uploading}
-//                 />
-
-//                 {/* Visible custom choose button */}
-//                 <label
-//                   htmlFor="videoFile"
-//                   className={`inline-flex items-center gap-3 px-4 py-3 rounded-md cursor-pointer
-//                   ${
-//                     uploading
-//                       ? "opacity-60 pointer-events-none"
-//                       : "hover:shadow-lg"
-//                   }
-//                   bg-neutral-900 text-white`}
-//                 >
-//                   {/* Icon */}
-//                   <svg
-//                     xmlns="http://www.w3.org/2000/svg"
-//                     className="h-5 w-5"
-//                     viewBox="0 0 24 24"
-//                     fill="none"
-//                     stroke="currentColor"
-//                   >
-//                     <path
-//                       d="M12 3v12"
-//                       strokeWidth="1.8"
-//                       strokeLinecap="round"
-//                       strokeLinejoin="round"
-//                     />
-//                     <path
-//                       d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-//                       strokeWidth="1.8"
-//                       strokeLinecap="round"
-//                       strokeLinejoin="round"
-//                     />
-//                   </svg>
-//                   <span className="font-medium">Choose File</span>
-//                 </label>
-
-//                 {/* Filename / size */}
-//                 <div className="flex-1 min-w-0">
-//                   {selectedFile ? (
-//                     <div className="bg-slate-50 dark:bg-slate-700 border rounded-md px-4 py-3">
-//                       <div className="flex items-center justify-between gap-4">
-//                         <div className="truncate">
-//                           <div className="font-medium text-slate-900 dark:text-slate-100">
-//                             {selectedFile.name}
-//                           </div>
-//                           <div className="text-xs text-slate-500 dark:text-slate-300">
-//                             {formatFileSize(selectedFile.size)}
-//                           </div>
-//                         </div>
-//                         <div className="text-xs text-slate-400">Ready</div>
-//                       </div>
-//                     </div>
-//                   ) : (
-//                     <div className="bg-slate-50 dark:bg-slate-700 border rounded-md px-4 py-3 text-slate-500">
-//                       No file chosen
-//                     </div>
-//                   )}
-//                 </div>
-//               </div>
-
-//               {/* validation error */}
-//               {errors.videoFile && (
-//                 <p className="text-sm text-rose-500 mt-2">
-//                   {errors.videoFile.message}
-//                 </p>
-//               )}
-//             </div>
-
-//             {/* Upload Progress */}
-//             {uploading && (
-//               <div>
-//                 <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-md h-3 overflow-hidden">
-//                   <div
-//                     className="h-3 bg-indigo-600 dark:bg-indigo-500 transition-all"
-//                     style={{ width: `${uploadProgress}%` }}
-//                   />
-//                 </div>
-//                 <p className="text-sm text-center mt-2 text-slate-600 dark:text-slate-300">
-//                   Uploading: {uploadProgress}%
-//                 </p>
-//               </div>
-//             )}
-
-//             {/* Error message */}
-//             {errors.root && (
-//               <div className="p-3 bg-rose-50 border border-rose-100 rounded-md">
-//                 <p className="text-sm text-rose-700">{errors.root.message}</p>
-//               </div>
-//             )}
-
-//             {/* Success message */}
-//             {uploadedVideo && (
-//               <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-md">
-//                 <h3 className="font-semibold text-emerald-800">
-//                   Upload Successful
-//                 </h3>
-//                 <div className="mt-1 text-sm text-slate-700">
-//                   <p>Duration: {formatDuration(uploadedVideo.duration || 0)}</p>
-//                   <p>
-//                     Uploaded:{" "}
-//                     {new Date(
-//                       uploadedVideo.uploadedAt ||
-//                         uploadedVideo.uploadAt ||
-//                         uploadedVideo.createdAt ||
-//                         Date.now()
-//                     ).toLocaleString()}
-//                   </p>
-//                 </div>
-//               </div>
-//             )}
-
-//             {/* Submit */}
-//             <div>
-//               <button
-//                 type="submit"
-//                 disabled={uploading}
-//                 className={`w-full rounded-lg py-3 text-white font-semibold shadow-md
-//                 ${
-//                   uploading
-//                     ? "bg-indigo-500/80"
-//                     : "bg-indigo-600 hover:bg-indigo-700"
-//                 }`}
-//               >
-//                 {uploading ? "Uploading..." : "Upload Video"}
-//               </button>
-//             </div>
-
-//             {/* Thumbnail preview (if available) */}
-//             {uploadedVideo &&
-//               (uploadedVideo.thumbnailURL || uploadedVideo.thubmnailURL) && (
-//                 <div>
-//                   <h4 className="text-sm font-medium text-slate-700 mb-2">
-//                     Video Thumbnail
-//                   </h4>
-//                   <div className="w-full rounded-md overflow-hidden border">
-//                     <img
-//                       src={
-//                         uploadedVideo.thumbnailURL || uploadedVideo.thubmnailURL
-//                       }
-//                       alt="video thumbnail"
-//                       className="w-full h-48 object-cover"
-//                     />
-//                   </div>
-//                 </div>
-//               )}
-//           </form>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default AdminUpload;

@@ -106,25 +106,25 @@ const saveVideoMetaData = async (req, res) => {
             })
         }
 
-        // const thumbnailURL = cloudinary.url(cloudinaryResourse.public_id, {
-        //     resource_type: "video",
-        //     transformation: [
-        //         {
-        //             width: 400,
-        //             height: 225,
-        //             crop: "fill"
-        //         },
-        //         {
-        //             quality: "auto",
-        //         },
-        //         {
-        //             start_offset: "auto"
-        //         },
-        //     ],
-        //     format: "jpg"
-        // })
+        const thumbnailURL = cloudinary.url(cloudinaryResourse.public_id, {
+            resource_type: "video",
+            transformation: [
+                {
+                    width: 400,
+                    height: 225,
+                    crop: "fill"
+                },
+                {
+                    quality: "auto",
+                },
+                {
+                    start_offset: "auto"
+                },
+            ],
+            format: "jpg"
+        })
 
-        const thumbnailURL = cloudinary.image(cloudinaryPublicId, { resource_type: "video" })
+        // const thumbnailURL = cloudinary.image(cloudinaryPublicId, { resource_type: "video" })
 
         // create video solution record
         const videoSolution = await SolutionVideo.create({

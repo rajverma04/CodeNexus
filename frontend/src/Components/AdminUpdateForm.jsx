@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import z from "zod";
 import axiosClient from "../utils/axiosClient";
+import { Link } from "react-router";
+import { ArrowLeft, Save, Plus, Trash2, FileText, Eye, EyeOff, Code2, CheckCircle2 } from "lucide-react";
 
 const problemSchema = z.object({
     title: z.string().min(1, "Title is required."),
@@ -190,7 +192,7 @@ export default function AdminUpdateForm() {
             setSubmitting(false);
 
             // Navigate back
-            setTimeout(() => navigate("/admin"), 1000);
+            setTimeout(() => navigate("/admin/update"), 1500);
 
         } catch (err) {
             console.error(err);
@@ -205,77 +207,78 @@ export default function AdminUpdateForm() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+            <div className="min-h-screen bg-black flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <svg className="animate-spin h-10 w-10 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                    </svg>
-                    <div className="text-slate-100">Loading problem...</div>
+                    <span className="loading loading-spinner loading-lg text-emerald-500"></span>
+                    <div className="text-zinc-400 animate-pulse">Loading problem data...</div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 p-8 relative">
+        <div className="min-h-screen bg-black text-white p-6 relative overflow-hidden selection:bg-emerald-500/30">
+            {/* Background Gradients */}
+            <div className="fixed inset-0 z-0 pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-emerald-500/10 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[120px]" />
+            </div>
+
             {/* Loader overlay */}
             {submitting && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" aria-hidden="true">
-                    <div className="flex flex-col items-center gap-4 bg-slate-800/90 p-6 rounded-lg shadow-lg">
-                        <svg className="animate-spin h-12 w-12 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                        </svg>
-                        <div className="text-slate-100 text-sm">Updating problem... please wait</div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" aria-hidden="true">
+                    <div className="flex flex-col items-center gap-4 bg-[#0d1117] border border-white/10 p-8 rounded-2xl shadow-2xl">
+                        <span className="loading loading-spinner loading-lg text-emerald-500"></span>
+                        <div className="text-zinc-300 text-sm font-medium animate-pulse">Updating problem... please wait</div>
                     </div>
                 </div>
             )}
 
             {/* Toast Notification */}
             {toast && (
-                <div className="fixed top-5 right-5 z-50 rounded-md bg-emerald-600 px-4 py-2 text-white shadow-lg animate-bounce">
-                    {toast}
+                <div className="fixed top-5 right-5 z-50 rounded-xl bg-emerald-600/90 backdrop-blur-md px-6 py-3 text-white shadow-xl animate-fade-in-up flex items-center gap-3 border border-white/10">
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span className="font-medium">{toast}</span>
                 </div>
             )}
 
-            <div className="max-w-3xl mx-auto space-y-8">
-                {/* Nav using Buttons to avoid NavLink issues */}
-                <nav className="flex gap-3">
-                    <button onClick={() => navigate("/admin/create")} className="btn btn-sm btn-ghost text-slate-300 hover:text-white">
-                        Create
-                    </button>
-                    <button onClick={() => navigate("/admin/update")} className="btn btn-sm btn-primary">
-                        Update
-                    </button>
-                    <button onClick={() => navigate("/admin/delete")} className="btn btn-sm btn-ghost text-slate-300 hover:text-white">
-                        Delete
-                    </button>
-                </nav>
+            <div className="max-w-4xl mx-auto space-y-8 relative z-10">
 
-                <h1 className="text-3xl font-bold text-slate-100">Update Problem</h1>
+                <div className="flex items-center mb-8">
+                    <button
+                        onClick={() => navigate("/admin/update")}
+                        className="mr-6 p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-zinc-400 hover:text-white transition-all group"
+                    >
+                        <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    </button>
+                    <div>
+                        <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">Edit Problem</h1>
+                        <p className="text-zinc-400 text-sm mt-1">Update content, test cases, and solution code</p>
+                    </div>
+                </div>
 
                 {/* Server error */}
                 {serverError && (
-                    <div className="rounded-md bg-rose-600/10 border border-rose-500 p-3 text-rose-200">
-                        {serverError}
+                    <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-red-400 backdrop-blur-sm flex items-start gap-3">
+                        <div className="p-1 bg-red-500/20 rounded-full"><EyeOff className="w-4 h-4" /></div>
+                        <div>
+                            <strong className="block text-sm font-semibold">Error</strong>
+                            <span className="text-sm opacity-90">{serverError}</span>
+                        </div>
                     </div>
                 )}
 
                 {/* Success confirmation */}
                 {successData && (
-                    <div className="rounded-md bg-green-600/10 border border-green-400 p-4 text-green-100 space-y-3">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <strong className="block text-lg">Success</strong>
-                                <p className="text-sm text-green-100/90">
-                                    {successData.message}
-                                </p>
+                    <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-6 backdrop-blur-sm">
+                        <div className="flex items-start gap-4">
+                            <div className="p-2 bg-emerald-500/20 rounded-full text-emerald-400 mt-1">
+                                <CheckCircle2 className="w-6 h-6" />
                             </div>
-                            <div className="flex gap-2">
-                                <button onClick={handleGoAdmin} className="px-4 py-2 rounded-md bg-slate-800 border text-slate-100">
-                                    Go to Admin
-                                </button>
+                            <div>
+                                <h3 className="text-lg font-bold text-white mb-1">Update Successful!</h3>
+                                <p className="text-emerald-400/80 text-sm">{successData.message}</p>
+                                <p className="text-zinc-500 text-xs mt-2">Redirecting to problem list...</p>
                             </div>
                         </div>
                     </div>
@@ -283,166 +286,230 @@ export default function AdminUpdateForm() {
 
                 <form onSubmit={handleSubmit(onSubmit, (e) => console.log(e))} className="space-y-8">
                     {/* Basic Information card */}
-                    <section className="rounded-xl bg-slate-800 p-6 shadow-md border border-slate-700">
-                        <h2 className="text-2xl font-semibold text-slate-100 mb-4">Basic Information</h2>
+                    <section className="rounded-2xl bg-white/5 border border-white/10 p-6 md:p-8 backdrop-blur-md">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400"><FileText className="w-5 h-5" /></div>
+                            <h2 className="text-xl font-bold text-white">Basic Information</h2>
+                        </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <label className="text-sm text-slate-300">Title</label>
+                                <label className="text-sm font-medium text-zinc-400 mb-1.5 block">Title</label>
                                 <input
                                     {...register("title")}
-                                    className={`mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 ${errors.title ? "ring-1 ring-rose-500" : "border-slate-700"
-                                        }`}
+                                    className={`w-full rounded-xl border bg-black/40 px-4 py-2.5 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all ${errors.title ? "border-rose-500/50 focus:border-rose-500" : "border-white/10 focus:border-emerald-500/50"}`}
                                     placeholder="Problem title"
                                     disabled={submitting}
                                 />
-                                {errors.title && <p className="text-rose-400 text-sm mt-1">{errors.title.message}</p>}
+                                {errors.title && <p className="text-rose-400 text-xs mt-1 font-medium">{errors.title.message}</p>}
                             </div>
 
                             <div>
-                                <label className="text-sm text-slate-300">Description</label>
+                                <label className="text-sm font-medium text-zinc-400 mb-1.5 block">Description (Markdown supported)</label>
                                 <textarea
                                     {...register("description")}
-                                    className={`mt-2 block w-full rounded-md border bg-slate-900 px-3 py-3 text-slate-100 placeholder-slate-500 h-40 ${errors.description ? "ring-1 ring-rose-500" : "border-slate-700"
-                                        }`}
+                                    className={`w-full rounded-xl border bg-black/40 px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all h-40 resize-y ${errors.description ? "border-rose-500/50 focus:border-rose-500" : "border-white/10 focus:border-emerald-500/50"}`}
                                     placeholder="Describe the problem..."
                                     disabled={submitting}
                                 />
-                                {errors.description && <p className="text-rose-400 text-sm mt-1">{errors.description.message}</p>}
+                                {errors.description && <p className="text-rose-400 text-xs mt-1 font-medium">{errors.description.message}</p>}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mt-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-sm text-slate-300">Difficulty</label>
-                                    <select
-                                        {...register("difficulty")}
-                                        className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 border-slate-700"
-                                        disabled={submitting}
-                                    >
-                                        <option value="easy">Easy</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="hard">Hard</option>
-                                    </select>
+                                    <label className="text-sm font-medium text-zinc-400 mb-1.5 block">Difficulty</label>
+                                    <div className="relative">
+                                        <select
+                                            {...register("difficulty")}
+                                            className="w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                            disabled={submitting}
+                                        >
+                                            <option value="easy">Easy</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="hard">Hard</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div>
-                                    <label className="text-sm text-slate-300">Tag</label>
-                                    <select
-                                        {...register("tags")}
-                                        className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 border-slate-700"
-                                        disabled={submitting}
-                                    >
-                                        <option value="array">Array</option>
-                                        <option value="linkedList">Linked List</option>
-                                        <option value="graph">Graph</option>
-                                        <option value="dp">DP</option>
-                                    </select>
+                                    <label className="text-sm font-medium text-zinc-400 mb-1.5 block">Topic Tag</label>
+                                    <div className="relative">
+                                        <select
+                                            {...register("tags")}
+                                            className="w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                                            disabled={submitting}
+                                        >
+                                            <option value="array">Array</option>
+                                            <option value="linkedList">Linked List</option>
+                                            <option value="graph">Graph</option>
+                                            <option value="dp">Dynamic Programming</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-500">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     {/* Visible Test Cases */}
-                    <section className="rounded-xl bg-slate-800 p-6 shadow-md border border-slate-700">
-                        <div className="flex items-start justify-between">
-                            <h2 className="text-2xl font-semibold text-slate-100">Visible Test Cases</h2>
+                    <section className="rounded-2xl bg-white/5 border border-white/10 p-6 md:p-8 backdrop-blur-md">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><Eye className="w-5 h-5" /></div>
+                                <h2 className="text-xl font-bold text-white">Visible Test Cases</h2>
+                            </div>
                             <button
                                 type="button"
                                 onClick={() => appendVisible({ input: "", output: "", explanation: "" })}
-                                className="ml-4 inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white"
+                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors font-medium"
                                 disabled={submitting}
                             >
-                                + Add
+                                <Plus className="w-4 h-4" /> Add Case
                             </button>
                         </div>
 
-                        <div className="mt-4 space-y-4">
+                        <div className="space-y-6">
                             {visibleFields.map((field, index) => (
-                                <div key={field.id} className="rounded-md border border-slate-600 p-4 bg-slate-900">
-                                    <div className="flex justify-end">
-                                        <button type="button" onClick={() => removeVisible(index)} className="text-sm px-3 py-1 rounded-md bg-rose-500 text-white" disabled={submitting}>
-                                            Remove
+                                <div key={field.id} className="rounded-xl border border-white/5 bg-black/20 p-5 relative group">
+                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            type="button"
+                                            onClick={() => removeVisible(index)}
+                                            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                                            disabled={submitting}
+                                            title="Remove test case"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
 
-                                    <div className="mt-2">
-                                        <input {...register(`visibleTestCases.${index}.input`)} placeholder="Input" className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 border-slate-700" disabled={submitting} />
-                                    </div>
+                                    <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4">Case {index + 1}</h4>
 
-                                    <div className="mt-3">
-                                        <input {...register(`visibleTestCases.${index}.output`)} placeholder="Output" className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 border-slate-700" disabled={submitting} />
-                                    </div>
-
-                                    <div className="mt-3">
-                                        <textarea {...register(`visibleTestCases.${index}.explanation`)} placeholder="Explanation" className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-3 text-slate-100 placeholder-slate-500 border-slate-700 h-28" disabled={submitting} />
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="text-xs text-zinc-400 mb-1 block">Input</label>
+                                                <input {...register(`visibleTestCases.${index}.input`)} placeholder="Input" className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-emerald-500/50" disabled={submitting} />
+                                            </div>
+                                            <div>
+                                                <label className="text-xs text-zinc-400 mb-1 block">Output</label>
+                                                <input {...register(`visibleTestCases.${index}.output`)} placeholder="Output" className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-emerald-500/50" disabled={submitting} />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-zinc-400 mb-1 block">Explanation</label>
+                                            <textarea {...register(`visibleTestCases.${index}.explanation`)} placeholder="Explanation" className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-emerald-500/50 h-20 resize-none" disabled={submitting} />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
+                            {visibleFields.length === 0 && (
+                                <div className="text-center py-8 text-zinc-600 text-sm border-2 border-dashed border-white/5 rounded-xl">
+                                    No visible test cases.
+                                </div>
+                            )}
                         </div>
                     </section>
 
                     {/* Hidden Test Cases */}
-                    <section className="rounded-xl bg-slate-800 p-6 shadow-md border border-slate-700">
-                        <div className="flex items-start justify-between">
-                            <h2 className="text-2xl font-semibold text-slate-100">Hidden Test Cases</h2>
-                            <button type="button" onClick={() => appendHidden({ input: "", output: "" })} className="ml-4 inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white" disabled={submitting}>
-                                + Add
+                    <section className="rounded-2xl bg-white/5 border border-white/10 p-6 md:p-8 backdrop-blur-md">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-pink-500/10 text-pink-400"><EyeOff className="w-5 h-5" /></div>
+                                <h2 className="text-xl font-bold text-white">Hidden Test Cases</h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => appendHidden({ input: "", output: "" })}
+                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 transition-colors font-medium"
+                                disabled={submitting}
+                            >
+                                <Plus className="w-4 h-4" /> Add Case
                             </button>
                         </div>
 
-                        <div className="mt-4 space-y-4">
+                        <div className="space-y-6">
                             {hiddenFields.map((field, index) => (
-                                <div key={field.id} className="rounded-md border border-slate-600 p-4 bg-slate-900">
-                                    <div className="flex justify-end">
-                                        <button type="button" onClick={() => removeHidden(index)} className="text-sm px-3 py-1 rounded-md bg-rose-500 text-white" disabled={submitting}>
-                                            Remove
+                                <div key={field.id} className="rounded-xl border border-white/5 bg-black/20 p-5 relative group">
+                                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            type="button"
+                                            onClick={() => removeHidden(index)}
+                                            className="p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                                            disabled={submitting}
+                                            title="Remove test case"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
 
-                                    <div className="mt-2">
-                                        <input {...register(`hiddenTestCases.${index}.input`)} placeholder="Input" className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 border-slate-700" disabled={submitting} />
-                                    </div>
+                                    <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-4">Hidden Case {index + 1}</h4>
 
-                                    <div className="mt-3">
-                                        <input {...register(`hiddenTestCases.${index}.output`)} placeholder="Output" className="mt-2 block w-full rounded-md border bg-slate-900 px-3 py-2 text-slate-100 placeholder-slate-500 border-slate-700" disabled={submitting} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs text-zinc-400 mb-1 block">Input</label>
+                                            <input {...register(`hiddenTestCases.${index}.input`)} placeholder="Input" className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-emerald-500/50" disabled={submitting} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-zinc-400 mb-1 block">Output</label>
+                                            <input {...register(`hiddenTestCases.${index}.output`)} placeholder="Output" className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-2 text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-emerald-500/50" disabled={submitting} />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
+                            {hiddenFields.length === 0 && (
+                                <div className="text-center py-8 text-zinc-600 text-sm border-2 border-dashed border-white/5 rounded-xl">
+                                    No hidden test cases.
+                                </div>
+                            )}
                         </div>
                     </section>
 
                     {/* Code Templates */}
-                    <section className="rounded-xl bg-slate-800 p-6 shadow-md border border-slate-700">
-                        <h2 className="text-2xl font-semibold text-slate-100 mb-4">Code Templates</h2>
+                    <section className="rounded-2xl bg-white/5 border border-white/10 p-6 md:p-8 backdrop-blur-md">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400"><Code2 className="w-5 h-5" /></div>
+                            <h2 className="text-xl font-bold text-white">Code Templates</h2>
+                        </div>
 
                         <div className="space-y-8">
                             {["c++", "java", "javascript"].map((lang, idx) => (
-                                <div key={lang}>
-                                    <h3 className="text-lg text-slate-200 mb-2">{lang}</h3>
+                                <div key={lang} className="bg-black/20 p-5 rounded-xl border border-white/5">
+                                    <h3 className="text-sm font-bold text-zinc-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                        {lang}
+                                    </h3>
 
-                                    <label className="text-sm text-slate-400 block mb-1">Initial code</label>
-                                    <textarea {...register(`startCode.${idx}.initialCode`)} className="w-full rounded-md border bg-slate-900 px-3 py-3 text-slate-100 font-mono h-40 border-slate-700" placeholder={`${lang} initial code`} disabled={submitting} />
-
-                                    <label className="text-sm text-slate-400 block mt-4 mb-1">Reference solution</label>
-                                    <textarea {...register(`referenceSolution.${idx}.completeCode`)} className="w-full rounded-md border bg-slate-900 px-3 py-3 text-slate-100 font-mono h-40 border-slate-700" placeholder={`${lang} reference solution`} disabled={submitting} />
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-xs text-zinc-400 mb-1 block">Initial Code</label>
+                                            <textarea {...register(`startCode.${idx}.initialCode`)} className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-3 text-sm font-mono text-zinc-300 focus:outline-none focus:border-emerald-500/50 h-32" placeholder={`${lang} initial code`} disabled={submitting} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-zinc-400 mb-1 block">Reference Solution</label>
+                                            <textarea {...register(`referenceSolution.${idx}.completeCode`)} className="w-full rounded-lg border border-white/5 bg-black/40 px-3 py-3 text-sm font-mono text-zinc-300 focus:outline-none focus:border-emerald-500/50 h-32" placeholder={`${lang} reference solution`} disabled={submitting} />
+                                        </div>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </section>
 
                     {/* Submit */}
-                    <div className="pt-2">
-                        <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-lg">
+                    <div className="pt-4 pb-12">
+                        <button type="submit" disabled={submitting} className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-lg font-bold shadow-lg shadow-emerald-500/20 transition-all transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none">
                             {submitting ? (
-                                <>
-                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                                    </svg>
-                                    Updating...
-                                </>
+                                <span className="loading loading-spinner text-white"></span>
                             ) : (
-                                "Update Problem"
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    Update Problem
+                                </>
                             )}
                         </button>
                     </div>
