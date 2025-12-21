@@ -158,15 +158,30 @@ const saveVideoMetaData = async (req, res) => {
 const deleteVideo = async (req, res) => {
     try {
         const { problemId } = req.params;
-        const userId = req.result._id;
+        // const userId = req.result._id; // Not strictly needed if admin can delete any, but good for auditing
 
-        const video = await SolutionVideo.findOneAndDelete({ problemId: problemId });
+        // 1. Find the video first
+        const video = await SolutionVideo.findOne({ problemId: problemId });
+
         if (!video) {
             return res.status(404).json({ error: "Video not found" });
         }
 
-        await cloudinary.uploader.destroy(video.cloudinaryPublicId, { resource_type: "video", invalidate: true })
-        res.json({
+        // 2. Delete from Cloudinary
+        // Ensure we handle the case where it might not exist on Cloudinary but does in DB (orphan cleanup)
+        // But generally we attempt strict deletion.
+        if (video.cloudinaryPublicId) {
+            const cloudinaryResult = await cloudinary.uploader.destroy(video.cloudinaryPublicId, {
+                resource_type: "video",
+                invalidate: true
+            });
+            console.log("Cloudinary Delete Result:", cloudinaryResult);
+        }
+
+        // 3. Delete from Database
+        await SolutionVideo.deleteOne({ _id: video._id });
+
+        res.status(200).json({
             message: "Video deleted successfully"
         })
     } catch (error) {
@@ -179,4 +194,20 @@ const deleteVideo = async (req, res) => {
 
 
 
-module.exports = { generateUploadSignature, saveVideoMetaData, deleteVideo };
+const getAllVideos = async (req, res) => {
+    try {
+        const videos = await SolutionVideo.find({})
+            .populate({
+                path: "problemId",
+                select: "title difficulty tags"
+            })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(videos);
+    } catch (error) {
+        console.error("Error fetching videos:", error);
+        res.status(500).json({ error: "Failed to fetch video solutions" });
+    }
+}
+
+module.exports = { generateUploadSignature, saveVideoMetaData, deleteVideo, getAllVideos };

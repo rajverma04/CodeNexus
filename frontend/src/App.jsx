@@ -12,6 +12,7 @@ import AdminCreate from "./Components/AdminCreateProblem";
 import AdminDelete from "./Components/AdminDelete";
 import AdminUpdate from "./Components/AdminUpdate";
 import AdminUpdateForm from "./Components/AdminUpdateForm";
+import AdminVideoList from "./Components/AdminVideoList";
 //
 import ProblemEditor from "./Pages/ProblemEditor";
 import AdminVideo from "./Components/AdminVideo";
@@ -154,6 +155,17 @@ function App() {
               <AdminVideo />
             ) : (
               <Navigate to="/" />
+            )
+          }
+        ></Route>
+
+        <Route
+          path="/admin/video-library"
+          element={
+            isAuthenticated && user?.role === "admin" ? (
+              <AdminVideoList />
+            ) : (
+              <Navigate to="/problems" />
             )
           }
         ></Route>

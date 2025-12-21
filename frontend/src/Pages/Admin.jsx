@@ -44,6 +44,16 @@ export default function Admin() {
       route: "/admin/video",
     },
     {
+      id: "videoLibrary",
+      title: "Video Library",
+      description: "View all problems that have video solutions.",
+      icon: LayoutDashboard,
+      color: "from-pink-400 to-pink-600",
+      bgHover: "group-hover:bg-pink-500/10",
+      borderHover: "group-hover:border-pink-500/20",
+      route: "/admin/video-library",
+    },
+    {
       id: "admincreate",
       title: "Create Admin",
       description: "Add a new admin to the platform.",
