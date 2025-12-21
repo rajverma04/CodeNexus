@@ -12,7 +12,7 @@ import AdminCreate from "./Components/AdminCreateProblem";
 import AdminDelete from "./Components/AdminDelete";
 import AdminUpdate from "./Components/AdminUpdate";
 import AdminUpdateForm from "./Components/AdminUpdateForm";
-// import ProblemPage from "./Pages/ProblemPage";
+//
 import ProblemEditor from "./Pages/ProblemEditor";
 import AdminVideo from "./Components/AdminVideo";
 import AdminUpload from "./Components/AdminUpload";
@@ -33,13 +33,14 @@ function App() {
     dispatch(checkAuth());
   }, [dispatch]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
-      </div>
-    );
-  }
+
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-black text-white">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
