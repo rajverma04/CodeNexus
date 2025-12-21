@@ -29,7 +29,7 @@ const createProblem = async (req, res) => {
             const resultToken = submitResult.map((value) => value.token);       // return token for batch submission
 
             const testResult = await submitToken(resultToken);
-            console.log(testResult);
+            // console.log(testResult);
 
             for (const test of testResult) {
                 if (test.status_id != 3) {       // if error is present
@@ -81,7 +81,7 @@ const updateProblem = async (req, res) => {
             const resultToken = submitResult.map((value) => value.token);       // return token for batch submission
 
             const testResult = await submitToken(resultToken);
-            console.log(testResult);
+            // console.log(testResult);
 
             for (const test of testResult) {
                 if (test.status_id != 3) {       // if error is present
