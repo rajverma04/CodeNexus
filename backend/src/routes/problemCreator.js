@@ -1,7 +1,7 @@
 const express = require("express");
 const problemRouter = express.Router();
 const adminMiddleware = require("../middleware/adminMiddleware")
-const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem } = require("../controllers/userProblems")
+const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem, getUserSubmissionStats } = require("../controllers/userProblems")
 const userMiddleware = require("../middleware/userMiddleware")
 
 
@@ -25,6 +25,9 @@ problemRouter.get("/getAllProblems", userMiddleware, getAllProblems);
 
 // user solved problem
 problemRouter.get("/problemSolvedByUser", userMiddleware, solvedAllProblemByUser)
+
+// Get submissions stats for heatmap
+problemRouter.get("/getSubmissionStats", userMiddleware, getUserSubmissionStats);
 
 problemRouter.get("/submittedProblem/:pid", userMiddleware, submittedProblem);      // pid: problem id
 

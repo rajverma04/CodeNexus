@@ -118,7 +118,7 @@ function AdminDelete() {
             <span className="loading loading-spinner loading-lg text-emerald-500"></span>
           </div>
         ) : (
-          <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden shadow-2xl">
+          <div className="rounded-xl  border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden shadow-2xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -131,7 +131,7 @@ function AdminDelete() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y  divide-white/5">
                   {problems.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="p-8 text-center text-zinc-500">
@@ -175,7 +175,7 @@ function AdminDelete() {
                         <td className="p-4 align-top text-center">
                           <button
                             onClick={() => openConfirm(problem._id, problem.title)}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-all font-medium text-sm group/btn"
+                            className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition-all font-medium text-sm group/btn"
                           >
                             <Trash2 className="w-3.5 h-3.5 group-hover/btn:scale-110 transition-transform" />
                             Delete

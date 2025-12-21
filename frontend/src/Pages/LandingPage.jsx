@@ -51,7 +51,7 @@ const LandingPage = () => {
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link
-                            to="/signup"
+                            to="/problems"
                             className="px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg transition-all shadow-lg shadow-emerald-500/25 w-full sm:w-auto flex items-center justify-center gap-2 group"
                         >
                             Start Coding Free
