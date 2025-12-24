@@ -11,6 +11,7 @@ const cors = require("cors");
 const aiRouter = require("./routes/aiChatting");
 const chalk = require("chalk");
 const videoRouter = require("./routes/videoCreator");
+const discussionRouter = require("./routes/discussion.routes");
 const notesRouter = require("./routes/notes");
 const profileRouter = require("./routes/profile");
 
@@ -47,6 +48,9 @@ app.use("/problem", problemRouter);
 app.use("/submission", submitRouter);
 app.use("/ai", aiRouter);
 app.use("/video", videoRouter);
+app.use("/discussion", discussionRouter);
+app.use("/editorial", require("./routes/editorial.routes"));
+app.use("/solutions", require("./routes/solution.routes"));
 app.use("/notes", notesRouter);
 app.use("/profile", profileRouter);
 
