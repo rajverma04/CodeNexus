@@ -3,7 +3,7 @@ import { Tooltip as ReactTooltip } from 'react-tooltip';
 import 'react-calendar-heatmap/dist/styles.css';
 import axiosClient from '../utils/axiosClient';
 
-const ActivityHeatmap = () => {
+const ActivityHeatmap = ({ username }) => {
     // Helper to format date as YYYY-MM-DD
     const formatDate = (date) => {
         return date.toISOString().split('T')[0];
@@ -23,10 +23,15 @@ const ActivityHeatmap = () => {
     };
 
     useEffect(() => {
+        if (!username) {
+            setLoading(false);
+            return;
+        }
+
         const fetchStats = async () => {
             try {
-                const response = await axiosClient.get('/problem/getSubmissionStats');
-                const apiData = response.data;
+                const response = await axiosClient.get(`/profile/${username}/activity`);
+                const apiData = response.data?.activity || [];
 
                 // Map data for quick lookup
                 const dataMap = {};
@@ -88,7 +93,7 @@ const ActivityHeatmap = () => {
         };
 
         fetchStats();
-    }, []);
+    }, [username]);
 
 
     if (loading) {

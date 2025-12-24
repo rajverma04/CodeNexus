@@ -5,9 +5,12 @@ import { useParams, Link } from "react-router";
 import axiosClient from "../utils/axiosClient";
 import SubmissionHistory from "../Components/SubmissionHistory";
 import ChatAI from "../Components/ChatAI";
+import NotesPanel from "../Components/NotesPanel";
 import { useDispatch } from "react-redux";
 import { clearChat } from "../chatSlice";
 import Editorial from "../Components/Editorial";
+import DiscussionList from "../Components/Discussion/DiscussionList";
+import SolutionList from "../Components/Solutions/SolutionList";
 import {
     Copy,
     Check,
@@ -298,6 +301,8 @@ const ProblemEditor = () => {
                         <TabButton active={activeLeftTab === "editorial"} onClick={() => setActiveLeftTab("editorial")} icon={BookOpen} label="Editorial" />
                         <TabButton active={activeLeftTab === "solutions"} onClick={() => setActiveLeftTab("solutions")} icon={Code2} label="Solutions" />
                         <TabButton active={activeLeftTab === "submissions"} onClick={() => setActiveLeftTab("submissions")} icon={History} label="Submissions" />
+                        <TabButton active={activeLeftTab === "discussion"} onClick={() => setActiveLeftTab("discussion")} icon={MessageSquare} label="Discussion" />
+                        <TabButton active={activeLeftTab === "notes"} onClick={() => setActiveLeftTab("notes")} icon={List} label="Notes" />
                         <TabButton active={activeLeftTab === "chatAI"} onClick={() => setActiveLeftTab("chatAI")} icon={MessageSquare} label="AI Help" />
                     </div>
 
@@ -349,6 +354,7 @@ const ProblemEditor = () => {
                                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><BookOpen className="w-5 h-5 text-purple-400" /> Editorial</h2>
                                         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                                             <Editorial
+                                                problemId={problemId}
                                                 secureURL={problem.secureURL}
                                                 thumbnailURL={problem.thumbnailURL}
                                                 duration={problem.duration}
@@ -359,72 +365,10 @@ const ProblemEditor = () => {
 
                                 {/* 3. Solutions Tab */}
                                 {activeLeftTab === "solutions" && (
-                                    <div className="space-y-6 animate-fade-in flex flex-col h-full">
-                                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 shrink-0"><Code2 className="w-5 h-5 text-emerald-400" /> Official Solutions</h2>
-                                        <div className="flex-1 min-h-0">
-                                            {problem.referenceSolution?.filter(sol =>
-                                                // Normalize language names for comparison
-                                                (sol.language?.toLowerCase() === (languageMap[selectedLanguage] || selectedLanguage).toLowerCase()) ||
-                                                (sol.language?.toLowerCase() === "c++" && selectedLanguage === "cpp")
-                                            ).map((solution, index) => (
-                                                <div key={index} className="border border-white/10 rounded-xl overflow-hidden bg-[#0a0a0a] h-full flex flex-col">
-                                                    <div className="bg-white/5 px-4 py-3 border-b border-white/10 flex justify-between items-center shrink-0">
-                                                        <h3 className="font-semibold text-sm text-zinc-200 flex items-center gap-2">
-                                                            <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                                            {solution?.language || "Solution"}
-                                                        </h3>
-                                                        <button
-                                                            onClick={() => handleCopy(solution.completeCode, index)}
-                                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all border 
-                                    ${copiedIndex === index
-                                                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                                                    : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white"}`}
-                                                        >
-                                                            {copiedIndex === index ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                                                            {copiedIndex === index ? "Copied" : "Copy"}
-                                                        </button>
-                                                    </div>
-                                                    <div className="flex-1 overflow-hidden relative">
-                                                        <Editor
-                                                            height="100%"
-                                                            language={getLanguageForMonaco(selectedLanguage)}
-                                                            value={solution.completeCode}
-                                                            theme={theme}
-                                                            options={{
-                                                                readOnly: true,
-                                                                fontSize: 14,
-                                                                fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
-                                                                fontLigatures: true,
-                                                                minimap: { enabled: false },
-                                                                scrollBeyondLastLine: false,
-                                                                automaticLayout: true,
-                                                                tabSize: 2,
-                                                                padding: { top: 16 },
-                                                                renderLineHighlight: "none",
-                                                                scrollbar: {
-                                                                    vertical: "visible",
-                                                                    horizontal: "visible"
-                                                                }
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            )) || (
-                                                    <div className="flex flex-col items-center justify-center p-12 text-center text-zinc-500 border border-dashed border-white/10 rounded-xl">
-                                                        <Code2 className="w-12 h-12 mb-4 opacity-20" />
-                                                        <p>No solution available for {selectedLanguage}.</p>
-                                                    </div>
-                                                )}
-                                            {/* Show message if no solution found after filtering */}
-                                            {problem.referenceSolution?.filter(sol =>
-                                                (sol.language?.toLowerCase() === (languageMap[selectedLanguage] || selectedLanguage).toLowerCase()) ||
-                                                (sol.language?.toLowerCase() === "c++" && selectedLanguage === "cpp")
-                                            ).length === 0 && (
-                                                    <div className="flex flex-col items-center justify-center p-12 text-center text-zinc-500 border border-dashed border-white/10 rounded-xl">
-                                                        <Code2 className="w-12 h-12 mb-4 opacity-20" />
-                                                        <p>No solution available for {selectedLanguage === "cpp" ? "C++" : selectedLanguage === "javascript" ? "JavaScript" : "Java"}.</p>
-                                                    </div>
-                                                )}
+                                    <div className="h-full animate-fade-in flex flex-col">
+                                        <h2 className="text-xl font-bold mb-4 flex items-center gap-2 shrink-0"><Code2 className="w-5 h-5 text-emerald-400" /> Community Solutions</h2>
+                                        <div className="flex-1 min-h-0 bg-[#0d1117]">
+                                            <SolutionList problemId={problemId} />
                                         </div>
                                     </div>
                                 )}
@@ -437,7 +381,21 @@ const ProblemEditor = () => {
                                     </div>
                                 )}
 
-                                {/* 5. Chat Tab */}
+                                {/* 5. Discussion Tab */}
+                                {activeLeftTab === "discussion" && (
+                                    <div className="h-full animate-fade-in">
+                                        <DiscussionList problemId={problemId} />
+                                    </div>
+                                )}
+
+                                {/* 5. Notes Tab */}
+                                {activeLeftTab === "notes" && (
+                                    <div className="h-full animate-fade-in">
+                                        <NotesPanel problemId={problemId} />
+                                    </div>
+                                )}
+
+                                {/* 6. Chat Tab */}
                                 {activeLeftTab === "chatAI" && (
                                     <div className="h-full flex flex-col animate-fade-in relative">
                                         <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-4 rounded-xl border border-white/10 mb-4 flex items-center gap-3">
