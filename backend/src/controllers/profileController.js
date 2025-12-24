@@ -9,7 +9,7 @@ async function getPublicProfile(req, res) {
     const user = await User.findOne({ username }).select("_id firstName lastName username role createdAt bio");
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    // Aggregate solved problems (distinct accepted problems)
+    // Aggregate solved problems (distinct accepted problems) for this user
     const acceptedAgg = await Submission.aggregate([
       { $match: { userId: user._id, status: "accepted" } },
       { $group: { _id: "$problemId" } },
@@ -34,16 +34,33 @@ async function getPublicProfile(req, res) {
     ]);
     const successRate = totalSubmissions ? Number(((acceptedSubmissions / totalSubmissions) * 100).toFixed(2)) : 0;
 
-    // Global rank: rank by solved count (distinct accepted problems)
-    const solvedByUserAgg = await Submission.aggregate([
+    // Global rank (MongoDB 5+): compute rank over distinct accepted counts using window functions
+    // Score per user = number of distinct accepted problems (solvedDistinct)
+    const currentSolved = solvedProblemIds.length;
+
+    // Total users with at least 1 solved
+    const totalRankedRes = await Submission.aggregate([
       { $match: { status: "accepted" } },
       { $group: { _id: { userId: "$userId", problemId: "$problemId" } } },
-      { $group: { _id: "$_id.userId", solvedDistinct: { $sum: 1 } } },
+      { $group: { _id: "$_id.userId" } },
+      { $count: "count" },
     ]);
-    const currentSolved = solvedProblemIds.length;
-    const greaterCount = solvedByUserAgg.filter((u) => u.solvedDistinct > currentSolved).length;
-    const totalUsersRanked = solvedByUserAgg.length || 1;
-    const globalRank = currentSolved === 0 ? null : greaterCount + 1;
+    const totalUsersRanked = totalRankedRes?.[0]?.count || 0;
+
+    let globalRank = null;
+    if (currentSolved > 0) {
+      const rankEntry = await Submission.aggregate([
+        { $match: { status: "accepted" } },
+        // Distinct problem count per user
+        { $group: { _id: { userId: "$userId", problemId: "$problemId" } } },
+        { $group: { _id: "$_id.userId", solvedDistinct: { $sum: 1 } } },
+        // Unique ordinal rank: sort by solves desc, then tie-break by user id, assign position number
+        { $setWindowFields: { sortBy: { solvedDistinct: -1, _id: 1 }, output: { rank: { $documentNumber: {} } } } },
+        { $match: { _id: user._id } },
+        { $limit: 1 },
+      ]);
+      globalRank = rankEntry?.[0]?.rank ?? null;
+    }
 
     // Recent submissions
     const recent = await Submission.find({ userId: user._id })

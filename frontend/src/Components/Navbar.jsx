@@ -43,6 +43,12 @@ const Navbar = () => {
                     >
                         Notebook
                     </NavLink>
+                    <NavLink
+                        to="/faq"
+                        className="text-sm font-medium text-zinc-400 transition-colors hover:text-white"
+                    >
+                        FAQ
+                    </NavLink>
                 </div>
 
                 {/* User User Actions */}
