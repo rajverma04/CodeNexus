@@ -47,6 +47,8 @@ app.use("/submission", submitRouter);
 app.use("/ai", aiRouter);
 app.use("/video", videoRouter);
 app.use("/discussion", discussionRouter);
+app.use("/editorial", require("./routes/editorial.routes"));
+app.use("/solutions", require("./routes/solution.routes"));
 
 // connect DB and redist then start server
 const initializeConnection = async () => {
