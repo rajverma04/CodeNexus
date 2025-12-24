@@ -1,45 +1,48 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router";
 import { FileText, ChevronDown, ChevronRight, Printer, Book } from "lucide-react";
-
-// Mock problems metadata. Replace with backend fetch later.
-const MOCK_PROBLEMS = [
-  {
-    problemId: "two-sum",
-    title: "Two Sum",
-    description:
-      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.\n\nExample 1:\nInput: nums = [2,7,11,15], target = 9\nOutput: [0,1]\nExplanation: Because nums[0] + nums[1] == 9, we return [0, 1].\n\nExample 2:\nInput: nums = [3,2,4], target = 6\nOutput: [1,2]\n\nExample 3:\nInput: nums = [3,3], target = 6\nOutput: [0,1]\n\nConstraints:\n2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9\nOnly one valid answer exists.\n\nFollow-up: Can you come up with an algorithm that is less than O(n^2) time complexity?",
-  },
-  {
-    problemId: "valid-parentheses",
-    title: "Valid Parentheses",
-    description:
-      "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.",
-  },
-  {
-    problemId: "merge-two-lists",
-    title: "Merge Two Sorted Lists",
-    description:
-      "You are given the heads of two sorted linked lists list1 and list2. Merge the two lists in a sorted manner.",
-  },
-];
+import axiosClient from "../utils/axiosClient";
 
 const Notebook = () => {
   const notesByProblem = useSelector((state) => state.notes.byProblem);
+  const [serverNotes, setServerNotes] = useState([]);
   const [expanded, setExpanded] = useState({});
 
   const entries = useMemo(() => {
-    // Build list combining mock problems and any existing notes by problemId
-    const map = new Map(MOCK_PROBLEMS.map((p) => [p.problemId, p]));
-    const ids = new Set([...map.keys(), ...Object.keys(notesByProblem || {})]);
-    return Array.from(ids).map((id) => ({
-      problemId: id,
-      title: map.get(id)?.title || "Untitled Problem",
-      description: map.get(id)?.description || "No description available.",
-      note: notesByProblem?.[id] || "",
-    }));
-  }, [notesByProblem]);
+    // Prefer server notes; merge with local drafts. No mock data.
+    const serverMap = new Map(serverNotes.map((n) => [n.problemId, n]));
+    const ids = new Set([
+      ...serverNotes.map((n) => n.problemId),
+      ...Object.keys(notesByProblem || {}),
+    ]);
+    return Array.from(ids).map((id) => {
+      const server = serverMap.get(id);
+      return {
+        problemId: id,
+        title: server?.title ?? "Untitled Problem",
+        description: server?.description ?? "No description available.",
+        note: server?.content ?? notesByProblem?.[id] ?? "",
+      };
+    });
+  }, [notesByProblem, serverNotes]);
+
+  // Load server notes on mount
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await axiosClient.get("/notes");
+        if (isMounted && res.data?.success) {
+          setServerNotes(res.data.data || []);
+        }
+      } catch (err) {
+        // Silent fallback to local notes
+        console.warn("Failed to fetch server notes", err);
+      }
+    })();
+    return () => { isMounted = false; };
+  }, []);
 
   const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
   const printAll = () => window.print();
