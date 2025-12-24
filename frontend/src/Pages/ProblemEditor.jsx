@@ -8,6 +8,7 @@ import ChatAI from "../Components/ChatAI";
 import { useDispatch } from "react-redux";
 import { clearChat } from "../chatSlice";
 import Editorial from "../Components/Editorial";
+import DiscussionList from "../Components/Discussion/DiscussionList";
 import {
     Copy,
     Check,
@@ -298,6 +299,7 @@ const ProblemEditor = () => {
                         <TabButton active={activeLeftTab === "editorial"} onClick={() => setActiveLeftTab("editorial")} icon={BookOpen} label="Editorial" />
                         <TabButton active={activeLeftTab === "solutions"} onClick={() => setActiveLeftTab("solutions")} icon={Code2} label="Solutions" />
                         <TabButton active={activeLeftTab === "submissions"} onClick={() => setActiveLeftTab("submissions")} icon={History} label="Submissions" />
+                        <TabButton active={activeLeftTab === "discussion"} onClick={() => setActiveLeftTab("discussion")} icon={MessageSquare} label="Discussion" />
                         <TabButton active={activeLeftTab === "chatAI"} onClick={() => setActiveLeftTab("chatAI")} icon={MessageSquare} label="AI Help" />
                     </div>
 
@@ -437,7 +439,14 @@ const ProblemEditor = () => {
                                     </div>
                                 )}
 
-                                {/* 5. Chat Tab */}
+                                {/* 5. Discussion Tab */}
+                                {activeLeftTab === "discussion" && (
+                                    <div className="h-full animate-fade-in">
+                                        <DiscussionList problemId={problemId} />
+                                    </div>
+                                )}
+
+                                {/* 6. Chat Tab */}
                                 {activeLeftTab === "chatAI" && (
                                     <div className="h-full flex flex-col animate-fade-in relative">
                                         <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-4 rounded-xl border border-white/10 mb-4 flex items-center gap-3">
