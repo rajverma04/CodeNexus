@@ -37,6 +37,12 @@ const Navbar = () => {
                     >
                         Problems
                     </NavLink>
+                    <NavLink
+                        to="/notebook"
+                        className="text-sm font-medium text-zinc-400 transition-colors hover:text-white"
+                    >
+                        Notebook
+                    </NavLink>
                 </div>
 
                 {/* User User Actions */}

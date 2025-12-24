@@ -21,6 +21,7 @@ import AdminRegister from "./Components/AdminRegister";
 import ManageUsers from "./Components/ManageUsers";
 import UserProfile from "./Pages/UserProfile";
 import Navbar from "./Components/Navbar";
+import Notebook from "./Pages/Notebook";
 
 function App() {
   // check isAuthenticated
@@ -213,6 +214,12 @@ function App() {
         ></Route>
 
         {/* <Route path="/problem/:problemId" element={<ProblemPage />}></Route> */}
+
+        {/* Notebook */}
+        <Route
+          path="/notebook"
+          element={isAuthenticated ? <Notebook /> : <Navigate to="/login" />}
+        />
 
         {/* Code Editor  */}
         <Route path="/problems/:problemId" element={<ProblemEditor />}></Route>
