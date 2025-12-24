@@ -75,6 +75,7 @@ function UserProfile() {
     firstName: "",
     lastName: "",
     age: "",
+    bio: "",
   });
 
   // Stats State
@@ -106,6 +107,7 @@ function UserProfile() {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         age: user.age || "",
+        bio: user.bio || "",
       });
     }
 
@@ -144,12 +146,27 @@ function UserProfile() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resultAction = await dispatch(updateProfile(formData));
-    if (updateProfile.fulfilled.match(resultAction)) {
-      setIsEditing(false);
-      toast.success("Profile updated successfully!");
-    } else {
+    const { firstName, lastName, age, bio } = formData;
+    const resultAction = await dispatch(updateProfile({ firstName, lastName, age }));
+    if (!updateProfile.fulfilled.match(resultAction)) {
       toast.error("Failed to update profile");
+      return;
+    }
+
+    // Save bio separately via API if changed
+    try {
+      const currentBio = user?.bio || "";
+      if (String(bio) !== String(currentBio)) {
+        await axiosClient.post("/profile/bio", { bio: String(bio).slice(0, 280) });
+      }
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+      // Refresh profile data to reflect bio/stat changes
+      if (displayUser?.username) {
+        fetchProfile(displayUser.username);
+      }
+    } catch (err) {
+      toast.error("Failed to save bio");
     }
   };
 
@@ -392,6 +409,18 @@ function UserProfile() {
                           />
                         </div>
                       </div>
+                      {/* Bio */}
+                      <div className="space-y-1.5 text-left">
+                        <label className="text-xs text-zinc-400 font-medium ml-1">Bio (max 280 chars)</label>
+                        <textarea
+                          name="bio"
+                          value={formData.bio}
+                          onChange={(e) => setFormData({ ...formData, bio: e.target.value.slice(0, 280) })}
+                          className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all resize-none h-24"
+                          placeholder="Tell others about yourself..."
+                        />
+                        <p className="text-xs text-zinc-500 ml-1">{formData.bio.length}/280</p>
+                      </div>
                       <div className="flex justify-end pt-2">
                         <button
                           type="submit"
@@ -462,6 +491,12 @@ function UserProfile() {
                           <Calendar className="w-3.5 h-3.5" /> Joined {joinedDate}
                         </span>
                       </div>
+
+                      {displayUser?.bio && displayUser.bio.trim().length > 0 && (
+                        <p className="mt-3 text-zinc-300 leading-relaxed">
+                          {displayUser.bio}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
