@@ -26,6 +26,7 @@ const Editorial = ({ problemId, secureURL, thumbnailURL, duration }) => {
     const [showSettings, setShowSettings] = useState(false);
     const [playbackSpeed, setPlaybackSpeed] = useState(1);
     const controlsTimeoutRef = useRef(null);
+    const [selectedLanguageIndex, setSelectedLanguageIndex] = useState(0);
 
     const [editorialContent, setEditorialContent] = useState(null);
     const [loadingContent, setLoadingContent] = useState(false);
@@ -334,27 +335,47 @@ const Editorial = ({ problemId, secureURL, thumbnailURL, duration }) => {
                     {editorialContent.code && editorialContent.code.length > 0 && (
                         <div className="space-y-4">
                             <h3 className="text-lg font-bold text-white">Implementation</h3>
-                            {editorialContent.code.map((sol, i) => (
-                                <div key={i} className="border border-white/10 rounded-xl overflow-hidden">
-                                    <div className="bg-[#252526] px-4 py-2 border-b border-white/10 text-xs font-bold text-zinc-300 uppercase">
+
+                            {/* Language Tabs */}
+                            <div className="flex items-center gap-2">
+                                {editorialContent.code.map((sol, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setSelectedLanguageIndex(i)}
+                                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${selectedLanguageIndex === i
+                                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 shadow-lg shadow-emerald-500/10"
+                                            : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white"
+                                            }`}
+                                    >
                                         {sol.language}
-                                    </div>
-                                    <div className="h-[300px]">
-                                        <Editor
-                                            height="100%"
-                                            language={sol.language === "cpp" ? "cpp" : sol.language}
-                                            value={sol.code}
-                                            theme="vs-dark"
-                                            options={{
-                                                readOnly: true,
-                                                minimap: { enabled: false },
-                                                fontSize: 14,
-                                                scrollBeyondLastLine: false,
-                                            }}
-                                        />
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Active Solution */}
+                            <div className="border border-white/10 rounded-xl overflow-hidden animate-fade-in shadow-2xl">
+                                <div className="bg-[#252526] px-4 py-2 border-b border-white/10 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                        <span className="text-xs font-bold text-zinc-300 uppercase">{editorialContent.code[selectedLanguageIndex].language}</span>
                                     </div>
                                 </div>
-                            ))}
+                                <div className="h-[400px]">
+                                    <Editor
+                                        height="100%"
+                                        language={editorialContent.code[selectedLanguageIndex].language === "cpp" ? "cpp" : editorialContent.code[selectedLanguageIndex].language}
+                                        value={editorialContent.code[selectedLanguageIndex].code}
+                                        theme="vs-dark"
+                                        options={{
+                                            readOnly: true,
+                                            minimap: { enabled: false },
+                                            fontSize: 14,
+                                            scrollBeyondLastLine: false,
+                                            padding: { top: 16 }
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
