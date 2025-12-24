@@ -1,19 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-// Load initial notes from localStorage so users keep drafts between sessions.
-const loadInitialNotes = () => {
-    if (typeof localStorage === "undefined") return {};
-    try {
-        const stored = localStorage.getItem("cn_notes");
-        return stored ? JSON.parse(stored) : {};
-    } catch (err) {
-        console.warn("Failed to load notes from storage", err);
-        return {};
-    }
-};
-
+// Do not read from localStorage; notes are session-only in Redux.
 const initialState = {
-    byProblem: loadInitialNotes()
+    byProblem: {}
 };
 
 const notesSlice = createSlice({

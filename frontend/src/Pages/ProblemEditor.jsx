@@ -385,6 +385,9 @@ const ProblemEditor = () => {
                                 {activeLeftTab === "discussion" && (
                                     <div className="h-full animate-fade-in">
                                         <DiscussionList problemId={problemId} />
+                                    </div>
+                                )}
+
                                 {/* 5. Notes Tab */}
                                 {activeLeftTab === "notes" && (
                                     <div className="h-full animate-fade-in">

@@ -35,15 +35,7 @@ const NotesPanel = ({ problemId }) => {
         return () => { isMounted = false; };
     }, [problemId, dispatch]);
 
-    // Persist notes to localStorage so drafts survive refreshes.
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        try {
-            localStorage.setItem("cn_notes", JSON.stringify(notesByProblem));
-        } catch (err) {
-            console.warn("Failed to persist notes", err);
-        }
-    }, [notesByProblem]);
+    // Removed localStorage persistence to avoid cross-account leakage.
 
     const handleChange = async (event) => {
         const value = event.target.value;

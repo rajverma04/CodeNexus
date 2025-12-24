@@ -40,28 +40,6 @@ const Notebook = () => {
         if (isMounted && res.data?.success) {
           const serverNotesData = res.data.data || [];
           setServerNotes(serverNotesData);
-          
-          // Sync localStorage: remove any local drafts that aren't on the server
-          const serverProblemIds = new Set(serverNotesData.map((n) => n.problemId));
-          const localNotes = { ...notesByProblem };
-          let changed = false;
-          
-          Object.keys(localNotes).forEach((problemId) => {
-            if (!serverProblemIds.has(problemId)) {
-              console.log(`[Notebook] Removing local draft for problem ${problemId} (not on server)`);
-              delete localNotes[problemId];
-              changed = true;
-            }
-          });
-          
-          if (changed) {
-            // Update localStorage
-            try {
-              localStorage.setItem("cn_notes", JSON.stringify(localNotes));
-            } catch (err) {
-              console.warn("Failed to update localStorage", err);
-            }
-          }
         }
       } catch (err) {
         // Silent fallback to local notes
@@ -86,21 +64,9 @@ const Notebook = () => {
       // Remove from serverNotes state
       setServerNotes((arr) => arr.filter((n) => n.problemId !== id));
       
-      // Clear local draft (both Redux and localStorage)
+      // Clear local draft (Redux only)
       dispatch(deleteNoteLocal(id));
-      
-      // Also manually clear from localStorage to be safe
-      try {
-        const stored = localStorage.getItem("cn_notes");
-        if (stored) {
-          const notes = JSON.parse(stored);
-          delete notes[id];
-          localStorage.setItem("cn_notes", JSON.stringify(notes));
-        }
-      } catch (err) {
-        console.warn("Failed to clear localStorage", err);
-      }
-      
+
       setDeleteConfirm(null);
     } catch (err) {
       console.error("Failed to delete note:", err.response?.data || err.message);
