@@ -47,8 +47,13 @@ const DiscussionItem = ({ discussion, onDelete, isReply = false }) => {
         }
     };
 
-    const handleDelete = async () => {
-        if (!confirm("Are you sure you want to delete this?")) return;
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const handleDeleteClick = () => {
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
         try {
             const res = await axiosClient.delete(`/discussion/${item._id}`);
             if (res.data.success) {
@@ -58,6 +63,8 @@ const DiscussionItem = ({ discussion, onDelete, isReply = false }) => {
         } catch (error) {
             console.error("Delete failed:", error);
             toast.error("Failed to delete");
+        } finally {
+            setShowDeleteModal(false);
         }
     };
 
@@ -150,7 +157,7 @@ const DiscussionItem = ({ discussion, onDelete, isReply = false }) => {
 
                     {item.userId?._id === userId && (
                         <button
-                            onClick={handleDelete}
+                            onClick={handleDeleteClick}
                             className="text-xs text-zinc-500 hover:text-rose-400 transition-colors ml-auto"
                         >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -186,6 +193,32 @@ const DiscussionItem = ({ discussion, onDelete, isReply = false }) => {
                             }}
                         />
                     ))}
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-[#252526] rounded-xl border border-white/10 p-6 w-full max-w-sm shadow-xl animate-scale-up">
+                        <h3 className="text-lg font-bold text-white mb-2">Delete Discussion?</h3>
+                        <p className="text-zinc-400 text-sm mb-6">
+                            Are you sure you want to delete this discussion? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="px-4 py-2 text-sm font-medium text-zinc-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-lg shadow-lg shadow-rose-500/20 transition-all"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
