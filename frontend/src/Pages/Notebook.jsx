@@ -8,6 +8,7 @@ const Notebook = () => {
   const notesByProblem = useSelector((state) => state.notes.byProblem);
   const [serverNotes, setServerNotes] = useState([]);
   const [expanded, setExpanded] = useState({});
+  const [loading, setLoading] = useState(true);
 
   const entries = useMemo(() => {
     // Prefer server notes; merge with local drafts. No mock data.
@@ -39,6 +40,8 @@ const Notebook = () => {
       } catch (err) {
         // Silent fallback to local notes
         console.warn("Failed to fetch server notes", err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     })();
     return () => { isMounted = false; };
@@ -83,65 +86,72 @@ const Notebook = () => {
 
       {/* Interactive List (screen only) */}
       <div className="screen-only mx-auto max-w-5xl px-4 pb-16">
-        <div className="space-y-3">
-          {entries.length === 0 ? (
-            <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-zinc-400">
-              No notes yet. Add notes from a problem page.
-            </div>
-          ) : (
-            entries.map((item) => (
-              <div key={item.problemId} className="rounded-xl border border-white/10 bg-[#0d1117]">
-                {/* Row */}
-                <button
-                  onClick={() => toggle(item.problemId)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-600/20 border border-blue-500/30">
-                      <FileText className="w-4 h-4 text-blue-300" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold">{item.title}</div>
-                      <div className="text-xs text-zinc-500">{item.note ? "Has notes" : "No notes yet"}</div>
-                    </div>
-                  </div>
-                  {expanded[item.problemId] ? (
-                    <ChevronDown className="w-4 h-4 text-zinc-400" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-zinc-400" />
-                  )}
-                </button>
-
-                {/* Expanded */}
-                {expanded[item.problemId] && (
-                  <div className="px-4 pb-4 space-y-4">
-                    <div className="rounded-lg border border-white/10 bg-black/30 p-3">
-                      <div className="text-xs font-semibold text-zinc-400">Problem</div>
-                      <div className="mt-1 text-sm text-zinc-200">{item.title}</div>
-                      <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-300">{item.description}</div>
-                    </div>
-
-                    <div className="rounded-lg border border-white/10 bg-black/30 p-3">
-                      <div className="text-xs font-semibold text-zinc-400">My Notes</div>
-                      <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-200">
-                        {item.note || "No notes yet."}
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-emerald-500"></div>
+            <span className="ml-3 text-sm text-zinc-400">Loading your notebook...</span>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {entries.length === 0 ? (
+              <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-zinc-400">
+                No notes yet. Add notes from a problem page.
+              </div>
+            ) : (
+              entries.map((item) => (
+                <div key={item.problemId} className="rounded-xl border border-white/10 bg-[#0d1117]">
+                  {/* Row */}
+                  <button
+                    onClick={() => toggle(item.problemId)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-blue-600/20 border border-blue-500/30">
+                        <FileText className="w-4 h-4 text-blue-300" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold">{item.title}</div>
+                        <div className="text-xs text-zinc-500">{item.note ? "Has notes" : "No notes yet"}</div>
                       </div>
                     </div>
+                    {expanded[item.problemId] ? (
+                      <ChevronDown className="w-4 h-4 text-zinc-400" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-zinc-400" />
+                    )}
+                  </button>
 
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to={`/problems/${item.problemId}`}
-                        className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
-                      >
-                        Open Problem
-                      </Link>
+                  {/* Expanded */}
+                  {expanded[item.problemId] && (
+                    <div className="px-4 pb-4 space-y-4">
+                      <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                        <div className="text-xs font-semibold text-zinc-400">Problem</div>
+                        <div className="mt-1 text-sm text-zinc-200">{item.title}</div>
+                        <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-300">{item.description}</div>
+                      </div>
+
+                      <div className="rounded-lg border border-white/10 bg-black/30 p-3">
+                        <div className="text-xs font-semibold text-zinc-400">My Notes</div>
+                        <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-200">
+                          {item.note || "No notes yet."}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Link
+                          to={`/problems/${item.problemId}`}
+                          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
+                        >
+                          Open Problem
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {/* Print-only expanded view */}
