@@ -13,7 +13,7 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
 const DiscussionItem = ({ discussion, onDelete, isReply = false }) => {
-    const user = useSelector(store => store.user?.user); // Adjust based on actual store shape
+    const user = useSelector(store => store.auth?.user); // Adjust based on actual store shape
     const [item, setItem] = useState(discussion);
     const [showReplyForm, setShowReplyForm] = useState(false);
     const [showReplies, setShowReplies] = useState(false);

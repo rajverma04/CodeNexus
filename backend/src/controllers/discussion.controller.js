@@ -1,5 +1,6 @@
 const Discussion = require("../models/discussion");
 const User = require("../models/user");
+const mongoose = require("mongoose");
 
 // Create a new discussion (top-level)
 const createDiscussion = async (req, res) => {
@@ -36,6 +37,7 @@ const getDiscussions = async (req, res) => {
     try {
         const { problemId } = req.params;
         const { sortBy = "newest", page = 1, limit = 10 } = req.query;
+        console.log("Fetching discussions for:", problemId, "Sort:", sortBy, "Page:", page);
 
         const skip = (page - 1) * limit;
 
@@ -155,7 +157,10 @@ const getDiscussions = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error fetching discussions:", error);
+        console.error("Error fetching discussions FULL:", error);
+        if (error.name === 'CastError') {
+            return res.status(400).json({ success: false, message: "Invalid Problem ID" });
+        }
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
