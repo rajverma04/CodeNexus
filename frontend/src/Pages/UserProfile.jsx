@@ -287,9 +287,21 @@ function UserProfile() {
             </Link>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-                My Profile
+                {isOwnProfile ? "My Profile" : `${displayUser?.username || "Profile"}`}
               </h1>
-              <p className="text-zinc-400 mt-1">Manage your personal information and security.</p>
+              <p className="text-zinc-400 mt-1">
+                {isOwnProfile
+                  ? "Manage your personal information and security."
+                  : "Public view of profile, stats, and activity."}
+              </p>
+              {stats?.globalRank != null && stats?.totalUsersRanked !== undefined ? (
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3 py-1 text-sm text-zinc-200">
+                  <span className="text-emerald-400 font-semibold">#{stats.globalRank}</span>
+                  <span className="text-zinc-500">of {stats.totalUsersRanked || 0} globally</span>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-zinc-500">No global rank yet</p>
+              )}
             </div>
           </div>
         </div>

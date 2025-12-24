@@ -49,17 +49,25 @@ async function getPublicProfile(req, res) {
 
     let globalRank = null;
     if (currentSolved > 0) {
-      const rankEntry = await Submission.aggregate([
+      // Compute distinct solved counts for all users, then rank deterministically in memory
+      const solvedPerUser = await Submission.aggregate([
         { $match: { status: "accepted" } },
-        // Distinct problem count per user
         { $group: { _id: { userId: "$userId", problemId: "$problemId" } } },
         { $group: { _id: "$_id.userId", solvedDistinct: { $sum: 1 } } },
-        // Unique ordinal rank: sort by solves desc, then tie-break by user id, assign position number
-        { $setWindowFields: { sortBy: { solvedDistinct: -1, _id: 1 }, output: { rank: { $documentNumber: {} } } } },
-        { $match: { _id: user._id } },
-        { $limit: 1 },
       ]);
-      globalRank = rankEntry?.[0]?.rank ?? null;
+
+      solvedPerUser.sort((a, b) => {
+        if (b.solvedDistinct !== a.solvedDistinct) {
+          return b.solvedDistinct - a.solvedDistinct;
+        }
+        // Stable tie-breaker by ObjectId string to avoid rank flapping
+        return String(a._id).localeCompare(String(b._id));
+      });
+
+      const position = solvedPerUser.findIndex((u) => String(u._id) === String(user._id));
+      if (position !== -1) {
+        globalRank = position + 1; // 1-based rank
+      }
     }
 
     // Recent submissions
