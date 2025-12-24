@@ -121,4 +121,16 @@ async function setBio(req, res) {
   }
 }
 
-module.exports = { getPublicProfile, setUsername, setBio };
+// Public: GET /profile/check-username?username=foo
+async function checkUsername(req, res) {
+  try {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ success: false, message: "Username required" });
+    const exists = await User.findOne({ username: String(username).trim().toLowerCase() }).select("_id");
+    res.status(200).json({ success: true, available: !exists });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+module.exports = { getPublicProfile, setUsername, setBio, checkUsername };
