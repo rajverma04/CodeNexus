@@ -22,6 +22,21 @@ const userSchema = new Schema({
         lowercase: true,
         immutable: true,
     },
+    username: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+        lowercase: true,
+        minLength: 3,
+        maxLength: 20,
+        match: [/^[a-z0-9_\-.]+$/, "Username can contain lowercase letters, numbers, '_' '-' '.'"]
+    },
+    bio: {
+        type: String,
+        maxLength: 280,
+        default: ""
+    },
     age: {
         type: Number,
         min: 6,

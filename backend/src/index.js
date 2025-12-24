@@ -12,6 +12,7 @@ const aiRouter = require("./routes/aiChatting");
 const chalk = require("chalk");
 const videoRouter = require("./routes/videoCreator");
 const notesRouter = require("./routes/notes");
+const profileRouter = require("./routes/profile");
 
 app.use(cors({
     origin: process.env.FRONTEND_URL,
@@ -47,6 +48,7 @@ app.use("/submission", submitRouter);
 app.use("/ai", aiRouter);
 app.use("/video", videoRouter);
 app.use("/notes", notesRouter);
+app.use("/profile", profileRouter);
 
 // connect DB and redist then start server
 const initializeConnection = async () => {
