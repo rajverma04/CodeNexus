@@ -67,7 +67,7 @@ const Navbar = () => {
                                     <div className="rounded-xl border border-white/10 bg-[#0d1117] p-1 shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none backdrop-blur-md">
                                         <button
                                             className="cursor-pointer flex w-full items-center rounded-lg px-2 py-2 text-sm text-zinc-300 outline-none hover:bg-white/5 hover:text-white transition-colors"
-                                            onClick={() => navigate("/profile")}
+                                            onClick={() => navigate(`/u/${user?.username || user?.firstName}`)}
                                         >
                                             Profile
                                         </button>

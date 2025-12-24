@@ -208,11 +208,24 @@ function App() {
           }
         ></Route>
 
-        {/* Profile */}
+        {/* Profile - Own and Public */}
+        <Route
+          path="/u/:username"
+          element={<UserProfile />}
+        ></Route>
+
+        {/* Back-compat public profile path */}
+        <Route
+          path="/profile/:username"
+          element={<UserProfile />}
+        ></Route>
+
+        {/* Old /profile route redirect */}
         <Route
           path="/profile"
-          element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />}
+          element={isAuthenticated ? <Navigate to={`/u/${user?.username}`} /> : <Navigate to="/login" />}
         ></Route>
+        
 
         {/* <Route path="/problem/:problemId" element={<ProblemPage />}></Route> */}
 

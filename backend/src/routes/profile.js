@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { getPublicProfile, setUsername, setBio, checkUsername } = require("../controllers/profileController");
+const { getPublicProfile, getPublicActivity, setUsername, setBio, checkUsername } = require("../controllers/profileController");
 const userMiddleware = require("../middleware/userMiddleware");
 
-// Public profile by username
-router.get("/:username", getPublicProfile);
+// Public routes (order matters: specific before param)
 router.get("/check-username/availability", checkUsername);
+router.get("/:username/activity", getPublicActivity);
+router.get("/:username", getPublicProfile);
 
 // Protected updates
 router.post("/username", userMiddleware, setUsername);

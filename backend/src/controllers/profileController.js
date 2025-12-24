@@ -6,7 +6,7 @@ const Problem = require("../models/problems");
 async function getPublicProfile(req, res) {
   try {
     const { username } = req.params;
-    const user = await User.findOne({ username }).select("_id firstName lastName username role createdAt bio");
+    const user = await User.findOne({ username }).select("_id firstName lastName username emailId role createdAt bio isEmailVerified");
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     // Aggregate solved problems (distinct accepted problems) for this user
@@ -76,7 +76,9 @@ async function getPublicProfile(req, res) {
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
+          emailId: user.emailId,
           bio: user.bio || "",
+          isEmailVerified: user.isEmailVerified,
           joinedAt: user.createdAt,
         },
         stats: {
@@ -93,6 +95,35 @@ async function getPublicProfile(req, res) {
     });
   } catch (err) {
     console.error("getPublicProfile error:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
+// Public: GET /profile/:username/activity (no auth) - last year submission counts by date
+async function getPublicActivity(req, res) {
+  try {
+    const { username } = req.params;
+    const user = await User.findOne({ username }).select("_id");
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const stats = await Submission.aggregate([
+      { $match: { userId: user._id, createdAt: { $gte: oneYearAgo } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      { $project: { _id: 0, date: "$_id", count: 1 } },
+      { $sort: { date: 1 } },
+    ]);
+
+    res.status(200).json({ success: true, activity: stats });
+  } catch (err) {
+    console.error("getPublicActivity error:", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
@@ -150,4 +181,4 @@ async function checkUsername(req, res) {
   }
 }
 
-module.exports = { getPublicProfile, setUsername, setBio, checkUsername };
+module.exports = { getPublicProfile, getPublicActivity, setUsername, setBio, checkUsername };
