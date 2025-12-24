@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router";
-import { FileText, ChevronDown, ChevronRight, Printer, Book } from "lucide-react";
+import { FileText, ChevronDown, ChevronRight, Printer, Book, Trash2, ExternalLink, AlertCircle } from "lucide-react";
 import axiosClient from "../utils/axiosClient";
+import { deleteNote as deleteNoteLocal } from "../notesSlice";
 
 const Notebook = () => {
+  const dispatch = useDispatch();
   const notesByProblem = useSelector((state) => state.notes.byProblem);
   const [serverNotes, setServerNotes] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [loading, setLoading] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // null or problemId
 
   const entries = useMemo(() => {
-    // Prefer server notes; merge with local drafts. No mock data.
+    // Server notes already have title/description from populate; merge with local drafts
     const serverMap = new Map(serverNotes.map((n) => [n.problemId, n]));
     const ids = new Set([
       ...serverNotes.map((n) => n.problemId),
@@ -35,7 +38,30 @@ const Notebook = () => {
       try {
         const res = await axiosClient.get("/notes");
         if (isMounted && res.data?.success) {
-          setServerNotes(res.data.data || []);
+          const serverNotesData = res.data.data || [];
+          setServerNotes(serverNotesData);
+          
+          // Sync localStorage: remove any local drafts that aren't on the server
+          const serverProblemIds = new Set(serverNotesData.map((n) => n.problemId));
+          const localNotes = { ...notesByProblem };
+          let changed = false;
+          
+          Object.keys(localNotes).forEach((problemId) => {
+            if (!serverProblemIds.has(problemId)) {
+              console.log(`[Notebook] Removing local draft for problem ${problemId} (not on server)`);
+              delete localNotes[problemId];
+              changed = true;
+            }
+          });
+          
+          if (changed) {
+            // Update localStorage
+            try {
+              localStorage.setItem("cn_notes", JSON.stringify(localNotes));
+            } catch (err) {
+              console.warn("Failed to update localStorage", err);
+            }
+          }
         }
       } catch (err) {
         // Silent fallback to local notes
@@ -45,9 +71,42 @@ const Notebook = () => {
       }
     })();
     return () => { isMounted = false; };
-  }, []);
+  }, [notesByProblem]);
 
-  const toggle = (id) => setExpanded((e) => ({ ...e, [id]: !e[id] }));
+  const toggle = (id) => {
+    // Just toggle expanded state; no lazy loading needed since server notes already have title/description
+    setExpanded((e) => ({ ...e, [id]: !e[id] }));
+  };
+  const handleDelete = async (id) => {
+    try {
+      console.log("Deleting note for problem:", id);
+      const res = await axiosClient.delete(`/notes/${id}`);
+      console.log("Delete response:", res.data);
+      
+      // Remove from serverNotes state
+      setServerNotes((arr) => arr.filter((n) => n.problemId !== id));
+      
+      // Clear local draft (both Redux and localStorage)
+      dispatch(deleteNoteLocal(id));
+      
+      // Also manually clear from localStorage to be safe
+      try {
+        const stored = localStorage.getItem("cn_notes");
+        if (stored) {
+          const notes = JSON.parse(stored);
+          delete notes[id];
+          localStorage.setItem("cn_notes", JSON.stringify(notes));
+        }
+      } catch (err) {
+        console.warn("Failed to clear localStorage", err);
+      }
+      
+      setDeleteConfirm(null);
+    } catch (err) {
+      console.error("Failed to delete note:", err.response?.data || err.message);
+      alert("Failed to delete note: " + (err.response?.data?.message || err.message));
+    }
+  };
   const printAll = () => window.print();
 
   return (
@@ -94,32 +153,54 @@ const Notebook = () => {
         ) : (
           <div className="space-y-3">
             {entries.length === 0 ? (
-              <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-zinc-400">
-                No notes yet. Add notes from a problem page.
+              <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center">
+                <div className="flex items-center justify-center gap-2 text-zinc-400">
+                  <AlertCircle className="w-5 h-5" />
+                  <span>No notes yet. Add notes from a problem page.</span>
+                </div>
               </div>
             ) : (
               entries.map((item) => (
                 <div key={item.problemId} className="rounded-xl border border-white/10 bg-[#0d1117]">
                   {/* Row */}
-                  <button
-                    onClick={() => toggle(item.problemId)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-600/20 border border-blue-500/30">
-                        <FileText className="w-4 h-4 text-blue-300" />
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <button
+                      onClick={() => toggle(item.problemId)}
+                      className="flex-1 flex items-center justify-between text-left hover:bg-white/5 py-0 px-0"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-600/20 border border-blue-500/30">
+                          <FileText className="w-4 h-4 text-blue-300" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold">{item.title}</div>
+                          <div className="text-xs text-zinc-500">{item.note ? "Has notes" : "No notes yet"}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold">{item.title}</div>
-                        <div className="text-xs text-zinc-500">{item.note ? "Has notes" : "No notes yet"}</div>
-                      </div>
+                      {expanded[item.problemId] ? (
+                        <ChevronDown className="w-4 h-4 text-zinc-400" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-zinc-400" />
+                      )}
+                    </button>
+                    {/* Action buttons */}
+                    <div className="flex items-center gap-2 ml-4">
+                      <Link
+                        to={`/problems/${item.problemId}`}
+                        title="Open problem"
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => setDeleteConfirm(item.problemId)}
+                        title="Delete note"
+                        className="p-2 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-400 hover:text-red-300 transition"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
-                    {expanded[item.problemId] ? (
-                      <ChevronDown className="w-4 h-4 text-zinc-400" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-zinc-400" />
-                    )}
-                  </button>
+                  </div>
 
                   {/* Expanded */}
                   {expanded[item.problemId] && (
@@ -136,15 +217,6 @@ const Notebook = () => {
                           {item.note || "No notes yet."}
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/problems/${item.problemId}`}
-                          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-500"
-                        >
-                          Open Problem
-                        </Link>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -153,6 +225,32 @@ const Notebook = () => {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation dialog */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-[#0d1117] border border-white/10 rounded-lg p-6 max-w-sm">
+            <h3 className="text-lg font-semibold text-white">Delete Note?</h3>
+            <p className="mt-2 text-sm text-zinc-300">
+              This will permanently delete your note. This action cannot be undone.
+            </p>
+            <div className="mt-6 flex items-center gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-white text-sm font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm)}
+                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Print-only expanded view */}
       <div className="print-only mx-auto max-w-5xl px-4 py-6">
