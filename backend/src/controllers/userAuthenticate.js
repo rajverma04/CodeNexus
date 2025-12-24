@@ -7,6 +7,24 @@ const jwt = require("jsonwebtoken")
 const verifyToken = require("./googleAuthenticate");
 const generateOTP = require("../utils/generateOTP");
 const sendEmail = require("../utils/sendEmail");
+const { generateUniqueUsername, sanitizeBase } = require("../utils/username");
+/**
+ * Ensure the given user document has a username.
+ * If missing, generate a unique username from firstName or email local-part,
+ * assign it, persist to DB, and return the final username.
+ *
+ * Why: This provides a lazy backfill for legacy accounts created before
+ * the username field existed, so they get a public profile handle at next login.
+ */
+async function ensureUsernameForUser(user) {
+    if (user.username) return user.username;
+    const baseForUsername = sanitizeBase(user.firstName || (user.emailId || "").split("@")[0]);
+    const username = await generateUniqueUsername(User, baseForUsername);
+    user.username = username;
+    await user.save();
+    return username;
+}
+
 
 
 
@@ -22,14 +40,19 @@ const register = async (req, res) => {
         req.body.password = await bcrypt.hash(password, 10);        // TODO: hashing password
         req.body.role = "user";
 
-        const user = await User.create(req.body);       //! hash password before creating user profile
+        // assign a default username
+        const baseForUsername = sanitizeBase(firstName || emailId.split("@")[0]);
+        const username = await generateUniqueUsername(User, baseForUsername);
+
+        const user = await User.create({ ...req.body, username });       //! hash password before creating user profile
         const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user" }, process.env.JWT_KEY, { expiresIn: 3600 });
 
         const reply = {
             firstName: user.firstName,
             emailId: user.emailId,
             _id: user._id,
-            role: user.role
+            role: user.role,
+            username: user.username
         }
 
 
@@ -62,6 +85,9 @@ const login = async (req, res) => {
             throw new Error("Invalid Credential")
         }
 
+        // Lazy backfill: assign a username if this legacy user doesn't have one yet
+        await ensureUsernameForUser(user);
+
         const reply = {     // only these data will be sent to frontend
             firstName: user.firstName,
             lastName: user.lastName,
@@ -69,6 +95,7 @@ const login = async (req, res) => {
             age: user.age,
             _id: user._id,
             role: user.role,
+            username: user.username,
             problemSolved: user.problemSolved,
             isEmailVerified: user.isEmailVerified,
             hasPassword: !!user.password
@@ -282,13 +309,22 @@ const googleSignIn = async (req, res) => {
 
         if (!user) {
             // console.log("Creating new user...");
+            const baseForUsername = sanitizeBase(firstName || email.split("@")[0]);
+            const username = await generateUniqueUsername(User, baseForUsername);
             user = await User.create({
                 firstName,
                 emailId: email,
                 authProvider: "google",
-                password: null
+                password: null,
+                username
             });
             // console.log("User created:", user._id);
+        }
+        // Backfill username for existing google accounts without username
+        if (!user.username) {
+            const baseForUsername = sanitizeBase(firstName || email.split("@")[0]);
+            user.username = await generateUniqueUsername(User, baseForUsername);
+            await user.save();
         }
 
         // generate YOUR JWT
@@ -310,6 +346,7 @@ const googleSignIn = async (req, res) => {
                 emailId: user.emailId,
                 age: user.age,
                 role: user.role,
+                username: user.username,
                 problemSolved: user.problemSolved,
                 isEmailVerified: user.isEmailVerified,
                 hasPassword: !!user.password

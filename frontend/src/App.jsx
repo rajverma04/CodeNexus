@@ -21,6 +21,8 @@ import AdminRegister from "./Components/AdminRegister";
 import ManageUsers from "./Components/ManageUsers";
 import UserProfile from "./Pages/UserProfile";
 import Navbar from "./Components/Navbar";
+import Notebook from "./Pages/Notebook";
+import FAQ from "./Pages/FAQ";
 
 function App() {
   // check isAuthenticated
@@ -206,13 +208,35 @@ function App() {
           }
         ></Route>
 
-        {/* Profile */}
+        {/* Profile - Own and Public */}
         <Route
-          path="/profile"
-          element={isAuthenticated ? <UserProfile /> : <Navigate to="/login" />}
+          path="/u/:username"
+          element={<UserProfile />}
         ></Route>
 
+        {/* Back-compat public profile path */}
+        <Route
+          path="/profile/:username"
+          element={<UserProfile />}
+        ></Route>
+
+        {/* Old /profile route redirect */}
+        <Route
+          path="/profile"
+          element={isAuthenticated ? <Navigate to={`/u/${user?.username}`} /> : <Navigate to="/login" />}
+        ></Route>
+        
+
         {/* <Route path="/problem/:problemId" element={<ProblemPage />}></Route> */}
+
+        {/* Notebook */}
+        <Route
+          path="/notebook"
+          element={isAuthenticated ? <Notebook /> : <Navigate to="/login" />}
+        />
+
+        {/* FAQ / Info (public) */}
+        <Route path="/faq" element={<FAQ />} />
 
         {/* Code Editor  */}
         <Route path="/problems/:problemId" element={<ProblemEditor />}></Route>

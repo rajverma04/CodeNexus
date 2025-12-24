@@ -5,6 +5,7 @@ import { useParams, Link } from "react-router";
 import axiosClient from "../utils/axiosClient";
 import SubmissionHistory from "../Components/SubmissionHistory";
 import ChatAI from "../Components/ChatAI";
+import NotesPanel from "../Components/NotesPanel";
 import { useDispatch } from "react-redux";
 import { clearChat } from "../chatSlice";
 import Editorial from "../Components/Editorial";
@@ -301,6 +302,7 @@ const ProblemEditor = () => {
                         <TabButton active={activeLeftTab === "solutions"} onClick={() => setActiveLeftTab("solutions")} icon={Code2} label="Solutions" />
                         <TabButton active={activeLeftTab === "submissions"} onClick={() => setActiveLeftTab("submissions")} icon={History} label="Submissions" />
                         <TabButton active={activeLeftTab === "discussion"} onClick={() => setActiveLeftTab("discussion")} icon={MessageSquare} label="Discussion" />
+                        <TabButton active={activeLeftTab === "notes"} onClick={() => setActiveLeftTab("notes")} icon={List} label="Notes" />
                         <TabButton active={activeLeftTab === "chatAI"} onClick={() => setActiveLeftTab("chatAI")} icon={MessageSquare} label="AI Help" />
                     </div>
 
@@ -383,6 +385,10 @@ const ProblemEditor = () => {
                                 {activeLeftTab === "discussion" && (
                                     <div className="h-full animate-fade-in">
                                         <DiscussionList problemId={problemId} />
+                                {/* 5. Notes Tab */}
+                                {activeLeftTab === "notes" && (
+                                    <div className="h-full animate-fade-in">
+                                        <NotesPanel problemId={problemId} />
                                     </div>
                                 )}
 
