@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import axiosClient from "../utils/axiosClient";
 import Editor from "@monaco-editor/react";
+import ReactMarkdown from "react-markdown";
 
 const Editorial = ({ problemId, secureURL, thumbnailURL, duration }) => {
     const videoRef = useRef(null);
@@ -327,8 +328,8 @@ const Editorial = ({ problemId, secureURL, thumbnailURL, duration }) => {
                     )}
 
                     {/* Markdown Content */}
-                    <div className="prose prose-invert max-w-none">
-                        <p className="whitespace-pre-wrap text-zinc-300 leading-relaxed font-sans">{editorialContent.content}</p>
+                    <div className="prose prose-invert max-w-none text-zinc-300 leading-relaxed font-sans [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                        <ReactMarkdown>{editorialContent.content}</ReactMarkdown>
                     </div>
 
                     {/* Code Solutions */}
