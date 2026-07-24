@@ -14,6 +14,19 @@ const videoRouter = require("./routes/videoCreator");
 const discussionRouter = require("./routes/discussion.routes");
 const notesRouter = require("./routes/notes");
 const profileRouter = require("./routes/profile");
+const promBundle = require("express-prom-bundle");
+
+// Set up Prometheus middleware to track HTTP requests and expose default Node.js metrics
+const metricsMiddleware = promBundle({
+    includeMethod: true, 
+    includePath: true, 
+    includeStatusCode: true, 
+    includeUp: true,
+    promClient: {
+        collectDefaultMetrics: {} // collect memory, CPU, and event loop metrics
+    }
+});
+
 
 app.use(cors({
     origin: process.env.FRONTEND_URL,
@@ -23,6 +36,8 @@ app.use(cors({
 
 app.use(express.json());     // convert req.body data into JS object as it comes in JSON format 
 app.use(cookieParser());
+app.use(metricsMiddleware); // Apply metrics tracking to all routes
+
 
 // API health
 app.get("/", async (req, res) => {

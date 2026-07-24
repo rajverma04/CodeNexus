@@ -1,0 +1,8 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'codenexus-backend'
+    scheme: https
+    static_configs:
+      - targets: ['codenexus-backend.onrender.com']
