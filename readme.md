@@ -106,3 +106,23 @@ Follow these steps to set up the project locally.
 
 4. **Access the Application**
    Open your browser and navigate to `http://localhost:5173`.
+
+### Running with Docker
+
+You can also run the entire application using Docker Compose. Make sure you have Docker and Docker Compose installed.
+
+1. **Set up environment variables**
+   Ensure your `.env` files for both `frontend` and `backend` are set up as described in the steps above.
+
+2. **Build and start the containers**
+   ```bash
+   docker compose up --build
+   ```
+
+3. **Access the Application**
+   Open your browser and navigate to `http://localhost` (the frontend is served on port 80). The backend API will be available on `http://localhost:4000`.
+
+To stop the containers, run:
+   ```bash
+   docker compose down
+   ```
