@@ -18,23 +18,23 @@ const promBundle = require("express-prom-bundle");
 
 // Set up Prometheus middleware to track HTTP requests and expose default Node.js metrics
 const metricsMiddleware = promBundle({
-    includeMethod: true, 
-    includePath: true, 
-    includeStatusCode: true, 
+    includeMethod: true,
+    includePath: true,
+    includeStatusCode: true,
     includeUp: true,
     promClient: {
         collectDefaultMetrics: {} // collect memory, CPU, and event loop metrics
     }
 });
 
-
+app.set("trust proxy", 1);
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
 }))
 
-
-app.use(express.json());     // convert req.body data into JS object as it comes in JSON format 
+// convert req.body data into JS object as it comes in JSON format 
+// app.use(express.json());
 app.use(cookieParser());
 app.use(metricsMiddleware); // Apply metrics tracking to all routes
 
@@ -58,22 +58,25 @@ app.get("/", async (req, res) => {
 });
 
 
-app.use("/user", authRouter);
-app.use("/problem", problemRouter);
-app.use("/submission", submitRouter);
-app.use("/ai", aiRouter);
+app.use("/user", express.json({ limit: "10kb" }), authRouter);
+app.use("/problem", express.json({ limit: "500kb" }), problemRouter);
+app.use("/submission", express.json({ limit: "500kb" }), submitRouter);
+app.use("/ai", express.json({ limit: "30kb" }), aiRouter);
 app.use("/video", videoRouter);
-app.use("/discussion", discussionRouter);
-app.use("/editorial", require("./routes/editorial.routes"));
-app.use("/solutions", require("./routes/solution.routes"));
-app.use("/notes", notesRouter);
-app.use("/profile", profileRouter);
+app.use("/discussion", express.json({ limit: "10mb" }), discussionRouter);
+app.use("/editorial", express.json({ limit: "500kb" }), require("./routes/editorial.routes"));
+app.use("/solutions", express.json({ limit: "500kb" }), require("./routes/solution.routes"));
+app.use("/notes", express.json({ limit: "1mb" }), notesRouter);
+app.use("/profile", express.json({ limit: "500kb" }), profileRouter);
 
 // connect DB and redist then start server
 const initializeConnection = async () => {
     try {
-        await Promise.all([main(), redisClient.connect()])      // connect DB & redis
-        console.log(chalk.green("DB Connected"));
+        if (!redisClient.isOpen) {
+            await redisClient.connect();
+        }
+        await main();      // connect DB
+        console.log(chalk.green("DB & Redis Connected"));
 
         app.listen(process.env.PORT, () => {
             console.log(chalk.green(`Server running at http://localhost:${process.env.PORT}`));
@@ -85,13 +88,16 @@ const initializeConnection = async () => {
 
 initializeConnection();
 
-// main()
-//     .then(async () => {
-//         app.listen(process.env.PORT, () => {
-//             console.log(`Server running at ${process.env.PORT}`);
-//         })
-//     })
-//     .catch(err => console.log("Error: " + err));
+if (process.env.NODE_ENV === "production" && process.env.BACKEND_URL) {
+    const FOURTEEN_MINUTES = 14 * 60 * 1000;
 
-// Export for Vercel serverless
+    setInterval(async () => {
+        try {
+            await fetch(`${process.env.BACKEND_URL}/`);
+            console.log("Keep alive self ping successful")
+        } catch (err) {
+            console.error("Self ping failed: ", err.message);
+        }
+    }, FOURTEEN_MINUTES);
+}
 module.exports = app;

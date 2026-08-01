@@ -9,5 +9,8 @@ const redisClient = createClient({
         port: process.env.REDIS_PORT
     }
 });
+redisClient.on("error", (err) => {
+    console.error("Redis Client Error: ", err.message);
+})
 
 module.exports = redisClient;

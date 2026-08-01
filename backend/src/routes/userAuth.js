@@ -3,9 +3,10 @@ const authRouter = express.Router();
 const { register, login, logout, adminRegister, deleteProfile, updateProfile, changePassword, googleSignIn, verifyEmail, manageAccounts, sendVerificationOtp } = require("../controllers/userAuthenticate");
 const userMiddleware = require("../middleware/userMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
+const loginRateLimit = require("../middleware/rateLimiter");
 
 // register
-authRouter.post("/register", register);     // second parameter is controller(or can say function)
+authRouter.post("/register", loginRateLimit, register);     // second parameter is controller(or can say function)
 
 // send otp
 authRouter.post("/send-otp", userMiddleware, sendVerificationOtp);
@@ -14,7 +15,7 @@ authRouter.post("/send-otp", userMiddleware, sendVerificationOtp);
 authRouter.post("/verify-email", verifyEmail);
 
 // login
-authRouter.post("/login", login);
+authRouter.post("/login", loginRateLimit, login);
 
 // logout
 authRouter.post("/logout", userMiddleware, logout);

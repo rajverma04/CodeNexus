@@ -1,6 +1,5 @@
 const redisClient = require("../config/redis");
 const User = require("../models/user")  //! inlcude schema
-const Submission = require("../models/submission");
 const validate = require("../utils/validator")
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken")
