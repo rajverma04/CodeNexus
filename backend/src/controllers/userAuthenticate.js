@@ -44,7 +44,7 @@ const register = async (req, res) => {
         const username = await generateUniqueUsername(User, baseForUsername);
 
         const user = await User.create({ ...req.body, username });       //! hash password before creating user profile
-        const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user" }, process.env.JWT_KEY, { expiresIn: 3600 });
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: "user" }, process.env.JWT_KEY, { expiresIn: 3600 * 24 * 7 });
 
         const reply = {
             firstName: user.firstName,
@@ -55,7 +55,7 @@ const register = async (req, res) => {
         }
 
 
-        res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });     //! maxAge: lifetime of the cookie in milliseconds.
+        res.cookie("token", token, { maxAge: 3600 * 24 * 7 * 1000, sameSite: 'none', secure: true });     //! maxAge: lifetime of the cookie in milliseconds.
 
         // res.status(201).send("User Registered Successfully");
         res.status(201).json({
@@ -99,8 +99,8 @@ const login = async (req, res) => {
             isEmailVerified: user.isEmailVerified,
             hasPassword: !!user.password
         }
-        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 });
-        res.cookie("token", token, { maxAge: 3600 * 1000, sameSite: 'none', secure: true });
+        const token = jwt.sign({ _id: user._id, emailId: emailId, role: user.role }, process.env.JWT_KEY, { expiresIn: 3600 * 24 * 7 });
+        res.cookie("token", token, { maxAge: 3600 * 24 * 7 * 1000, sameSite: 'none', secure: true });
 
         // res.status(200).send("Logged In Successfully");
         res.status(201).json({
@@ -282,8 +282,6 @@ const changePassword = async (req, res) => {
             error: err.message
         });
     }
-
-
 }
 
 
@@ -334,7 +332,7 @@ const googleSignIn = async (req, res) => {
         );
         // console.log("User from DB", user);
 
-        res.cookie("token", jwtToken, { maxAge: 3600 * 1000, sameSite: 'none', secure: true })
+        res.cookie("token", jwtToken, { maxAge: 3600 * 24 * 7 * 1000, sameSite: 'none', secure: true })
 
         res.status(200).json({
             message: "Google Sign-In successful",

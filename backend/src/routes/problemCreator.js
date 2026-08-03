@@ -4,10 +4,6 @@ const adminMiddleware = require("../middleware/adminMiddleware")
 const { createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemByUser, submittedProblem, getUserSubmissionStats } = require("../controllers/userProblems")
 const userMiddleware = require("../middleware/userMiddleware")
 
-
-
-
-
 // problem create with admin access(permission)
 problemRouter.post("/create", adminMiddleware, createProblem);
 

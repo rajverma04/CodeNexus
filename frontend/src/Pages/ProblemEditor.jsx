@@ -155,32 +155,91 @@ const ProblemEditor = () => {
         }
     };
 
+    // const handleSubmitCode = async () => {
+    //     setRunningCode(true);
+    //     setSubmitResult(null);
+    //     setActiveRightTab("result");
+
+    //     try {
+    //         const response = await axiosClient.post(`/submission/submit/${problemId}`, {
+    //             code: code,
+    //             language: languageMap[selectedLanguage] || selectedLanguage,
+    //         }
+    //         );
+
+    //         setSubmitResult(response.data);
+    //         if (response.data.accepted) {
+    //             toast.success("Solution Accepted!", {
+    //                 icon: '🎉',
+    //                 style: {
+    //                     borderRadius: '10px',
+    //                     background: '#333',
+    //                     color: '#fff',
+    //                 },
+    //             });
+    //         } else {
+    //             toast.error("Solution Rejected");
+    //         }
+    //         setRunningCode(false);
+    //     } catch (error) {
+    //         console.error("Error submitting code:", error);
+    //         setSubmitResult(null);
+    //         toast.error("Submission failed");
+    //         setRunningCode(false);
+    //     }
+    // };
+
     const handleSubmitCode = async () => {
         setRunningCode(true);
         setSubmitResult(null);
         setActiveRightTab("result");
 
         try {
+            // 1. Submit code to BullMQ Queue
             const response = await axiosClient.post(`/submission/submit/${problemId}`, {
                 code: code,
                 language: languageMap[selectedLanguage] || selectedLanguage,
-            }
-            );
+            });
 
-            setSubmitResult(response.data);
-            if (response.data.accepted) {
-                toast.success("Solution Accepted!", {
-                    icon: '🎉',
-                    style: {
-                        borderRadius: '10px',
-                        background: '#333',
-                        color: '#fff',
-                    },
-                });
-            } else {
-                toast.error("Solution Rejected");
-            }
-            setRunningCode(false);
+            const submissionId = response.data.submissionId;
+
+            // 2. Poll status endpoint every 1.5s until execution finishes
+            const pollInterval = setInterval(async () => {
+                try {
+                    const statusRes = await axiosClient.get(`/submission/status/${submissionId}`);
+                    const data = statusRes.data;
+
+                    // When job completes (accepted, Wrong, or error)
+                    if (data.status !== "pending") {
+                        clearInterval(pollInterval);
+                        setRunningCode(false);
+
+                        const isAccepted = data.status === "accepted";
+                        setSubmitResult({
+                            accepted: isAccepted,
+                            passedTestCases: data.testCasesPassed,
+                            totalTestCases: data.testCasesTotal,
+                            runtime: data.runtime,
+                            memory: data.memory,
+                            errorMessage: data.errorMessage
+                        });
+
+                        if (isAccepted) {
+                            toast.success("Solution Accepted!", {
+                                icon: '🎉',
+                                style: { borderRadius: '10px', background: '#333', color: '#fff' }
+                            });
+                        } else {
+                            toast.error(data.errorMessage || "Solution Rejected");
+                        }
+                    }
+                } catch (pollErr) {
+                    clearInterval(pollInterval);
+                    setRunningCode(false);
+                    toast.error("Error fetching submission status");
+                }
+            }, 1500);
+
         } catch (error) {
             console.error("Error submitting code:", error);
             setSubmitResult(null);
@@ -188,6 +247,7 @@ const ProblemEditor = () => {
             setRunningCode(false);
         }
     };
+
 
     const getLanguageForMonaco = (lang) => {
         switch (lang) {
